@@ -1,0 +1,109 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model alunos {
+  id_aluno        Int          @id @default(autoincrement())
+  nome            String?      @db.VarChar(100)
+  cpf             String?      @db.VarChar(14)
+  email           String?      @db.VarChar(100)
+  telefone        String?      @db.VarChar(20)
+  endereco        String?      @db.VarChar(255)
+  data_nascimento DateTime?    @db.Date
+  senha           String?      @db.VarChar(255)
+  data_cadastro   DateTime?    @default(now()) @db.Timestamp(0)
+  avaliacoes      avaliacoes[]
+  matriculas      matriculas[]
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model avaliacoes {
+  id_avaliacao   Int       @id @default(autoincrement())
+  id_curso       Int?
+  id_aluno       Int?
+  nota           Int?
+  comentario     String?   @db.Text
+  data_avaliacao DateTime? @default(now()) @db.Timestamp(0)
+  cursos         cursos?   @relation(fields: [id_curso], references: [id_curso], onDelete: NoAction, onUpdate: NoAction, map: "avaliacoes_ibfk_1")
+  alunos         alunos?   @relation(fields: [id_aluno], references: [id_aluno], onDelete: NoAction, onUpdate: NoAction, map: "avaliacoes_ibfk_2")
+
+  @@index([id_aluno], map: "id_aluno")
+  @@index([id_curso], map: "id_curso")
+}
+
+model categorias {
+  id_categoria Int      @id @default(autoincrement())
+  nome         String   @db.VarChar(100)
+  descricao    String?  @db.Text
+  cursos       cursos[]
+}
+
+model cursos {
+  id_curso      Int                @id @default(autoincrement())
+  nome          String             @db.VarChar(100)
+  descricao     String?            @db.Text
+  data_inicio   DateTime?          @db.Date
+  carga_horaria Int?
+  preco         Decimal?           @db.Decimal(10, 2)
+  nivel         cursos_nivel?
+  modalidade    cursos_modalidade?
+  imagem        String?            @db.VarChar(255)
+  status        cursos_status?     @default(ativo)
+  id_categoria  Int?
+  avaliacoes    avaliacoes[]
+  categorias    categorias?        @relation(fields: [id_categoria], references: [id_categoria], onDelete: NoAction, onUpdate: NoAction, map: "cursos_ibfk_1")
+  matriculas    matriculas[]
+
+  @@index([id_categoria], map: "id_categoria")
+}
+
+model instrutores {
+  id_instrutor  Int     @id @default(autoincrement())
+  nome          String? @db.VarChar(100)
+  email         String? @db.VarChar(100)
+  telefone      String? @db.VarChar(20)
+  especialidade String? @db.VarChar(100)
+  foto          String? @db.VarChar(255)
+}
+
+model matriculas {
+  id_matricula   Int                @id @default(autoincrement())
+  id_aluno       Int?
+  id_curso       Int?
+  data_matricula DateTime?          @db.Date
+  status         matriculas_status? @default(ativa)
+  nota_final     Decimal?           @db.Decimal(4, 2)
+  alunos         alunos?            @relation(fields: [id_aluno], references: [id_aluno], onDelete: NoAction, onUpdate: NoAction, map: "matriculas_ibfk_1")
+  cursos         cursos?            @relation(fields: [id_curso], references: [id_curso], onDelete: NoAction, onUpdate: NoAction, map: "matriculas_ibfk_2")
+
+  @@index([id_aluno], map: "id_aluno")
+  @@index([id_curso], map: "id_curso")
+}
+
+enum matriculas_status {
+  ativa
+  conclu_da @map("concluída")
+  cancelada
+}
+
+enum cursos_nivel {
+  b_sico        @map("básico")
+  intermedi_rio @map("intermediário")
+  avan_ado      @map("avançado")
+}
+
+enum cursos_modalidade {
+  presencial
+  online
+  h_brido    @map("híbrido")
+}
+
+enum cursos_status {
+  ativo
+  inativo
+}
