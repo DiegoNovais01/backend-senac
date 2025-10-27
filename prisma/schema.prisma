@@ -86,24 +86,24 @@ model matriculas {
 }
 
 enum matriculas_status {
-  ativa
-  conclu_da @map("concluída")
-  cancelada
+  ativa     @map("ativa")
+  concluida @map("concluída")
+  cancelada @map("cancelada")
 }
 
 enum cursos_nivel {
-  b_sico        @map("básico")
-  intermedi_rio @map("intermediário")
-  avan_ado      @map("avançado")
+  basico        @map("básico")
+  intermediario @map("intermediário")
+  avancado      @map("avançado")
 }
 
 enum cursos_modalidade {
-  presencial
-  online
-  h_brido    @map("híbrido")
+  presencial @map("presencial")
+  online     @map("online")
+  hibrido    @map("híbrido")
 }
 
 enum cursos_status {
-  ativo
-  inativo
+  ativo   @map("ativo")
+  inativo @map("inativo")
 }
