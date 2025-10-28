@@ -1,24 +1,34 @@
 import express from "express";
-import cors from "cors";
 import dotenv from "dotenv";
-import cursoRoutes from "./routes/cursoRoutes.js";
+import prisma from "./db.js";
+
 import alunoRoutes from "./routes/alunoRoutes.js";
+import cursoRoutes from "./routes/cursoRoutes.js";
 import matriculaRoutes from "./routes/matriculaRoutes.js";
+import authRoutes from "./routes/authRoutes.js";
 
 dotenv.config();
 const app = express();
 
-app.use(cors());
 app.use(express.json());
 
-// Rotas
-app.use("/cursos", cursoRoutes);
-app.use("/alunos", alunoRoutes);
-app.use("/matriculas", matriculaRoutes);
+app.use("/api/alunos", alunoRoutes);
+app.use("/api/cursos", cursoRoutes);
+app.use("/api/matriculas", matriculaRoutes);
+app.use("/api/auth", authRoutes);
 
 app.get("/", (req, res) => {
-  res.send("🌐 API do Senac Cursos funcionando!");
+  res.send("✅ API do SENAC está rodando! 🚀");
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`🚀 Servidor rodando na porta ${PORT}\n🔗 http://localhost:3000`));
+
+app.listen(PORT, () => {
+  console.log(`🚀 Servidor rodando na porta ${PORT}`);
+});
+
+process.on("SIGINT", async () => {
+  await prisma.$disconnect();
+  console.log("🧹 Prisma desconectado. Servidor encerrado.");
+  process.exit(0);
+});
