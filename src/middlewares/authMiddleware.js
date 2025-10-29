@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken";
 
-const JWT_SECRET = process.env.JWT_SECRET || "segredo_super_secreto";
+const JWT_SECRET = process.env.JWT_SECRET || "senha_token";
 
 // Middleware pra proteger rotas
 export const authMiddleware = (req, res, next) => {

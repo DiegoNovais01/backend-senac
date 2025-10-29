@@ -12,10 +12,10 @@ const app = express();
 
 app.use(express.json());
 
-app.use("/api/alunos", alunoRoutes);
-app.use("/api/cursos", cursoRoutes);
-app.use("/api/matriculas", matriculaRoutes);
-app.use("/api/auth", authRoutes);
+app.use("/alunos", alunoRoutes);
+app.use("/cursos", cursoRoutes);
+app.use("/matriculas", matriculaRoutes);
+app.use("/auth", authRoutes);
 
 app.get("/", (req, res) => {
   res.send("✅ API do SENAC está rodando! 🚀");
@@ -24,7 +24,7 @@ app.get("/", (req, res) => {
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
-  console.log(`🚀 Servidor rodando na porta ${PORT}`);
+  console.log(`🚀 Servidor rodando na porta ${PORT}\n🔗 http://localhost:3000`);
 });
 
 process.on("SIGINT", async () => {
