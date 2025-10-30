@@ -1,5 +1,7 @@
 import express from "express";
 import { validateBody } from "../middlewares/validateBody.js";
+import { authMiddleware } from "../middlewares/authMiddleware.js";
+import { checkRole } from "../middlewares/checkRole.js";
 import { alunoSchema } from "../schemas/alunoSchema.js";
 import {
   listarAlunos,
@@ -11,10 +13,13 @@ import {
 
 const router = express.Router();
 
-router.get("/", listarAlunos);
+// Rotas públicas (sem proteção)
 router.get("/:id", buscarAlunoPorId);
-router.post("/", validateBody(alunoSchema), criarAluno);
-router.put("/:id", validateBody(alunoSchema), atualizarAluno);
-router.delete("/:id", deletarAluno);
+
+// Rotas protegidas - requer autenticação E papel específico
+router.get("/", authMiddleware, checkRole(['admin', 'secretaria']), listarAlunos);
+router.post("/", authMiddleware, checkRole(['admin', 'secretaria']), validateBody(alunoSchema), criarAluno);
+router.put("/:id", authMiddleware, checkRole(['admin', 'secretaria']), validateBody(alunoSchema), atualizarAluno);
+router.delete("/:id", authMiddleware, checkRole(['admin']), deletarAluno);
 
 export default router;

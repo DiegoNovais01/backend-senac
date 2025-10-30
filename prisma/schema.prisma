@@ -69,6 +69,7 @@ model instrutores {
   telefone      String? @db.VarChar(20)
   especialidade String? @db.VarChar(100)
   foto          String? @db.VarChar(255)
+  cpf           String? @unique(map: "unique_cpf_instrutores") @db.VarChar(14)
 }
 
 model matriculas {
@@ -83,6 +84,16 @@ model matriculas {
 
   @@index([id_aluno], map: "id_aluno")
   @@index([id_curso], map: "id_curso")
+}
+
+model usuarios {
+  id_usuario    Int           @id @default(autoincrement())
+  nome          String?       @db.VarChar(100)
+  email         String        @unique @db.VarChar(100)
+  senha         String        @db.VarChar(255)
+  papel         usuario_papel @default(aluno)
+  data_cadastro DateTime      @default(now()) @db.Timestamp(0)
+  cpf           String?       @unique(map: "unique_cpf_usuarios") @db.VarChar(14)
 }
 
 enum matriculas_status {
@@ -106,4 +117,11 @@ enum cursos_modalidade {
 enum cursos_status {
   ativo   @map("ativo")
   inativo @map("inativo")
+}
+
+enum usuario_papel {
+  admin
+  professor
+  aluno
+  secretaria
 }
