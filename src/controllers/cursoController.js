@@ -66,7 +66,10 @@ export const criarCurso = async (req, res) => {
     data.modalidade = normalizeModalidade(data.modalidade);
 
     const novo = await prisma.cursos.create({ data });
-    res.status(201).json(novo);
+    res.status(201).json({
+      message: "Curso adicionado com sucesso!",
+      novo: novo
+    });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Erro ao criar curso." });
@@ -105,7 +108,10 @@ export const atualizarCurso = async (req, res) => {
       data,
     });
 
-    res.json(atualizado);
+    res.json({
+      message: "Curso atualizado com sucesso!",
+      atualizarCurso: atualizado
+    });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Erro ao atualizar curso." });

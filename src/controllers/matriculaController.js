@@ -32,7 +32,10 @@ export const criarMatricula = async (req, res) => {
       },
     });
 
-    res.status(201).json(matricula);
+    res.status(200).json({
+      message: "Matricula criada com sucesso!",
+      data: matricula
+    });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Erro ao criar matrícula." });
@@ -62,7 +65,10 @@ export const atualizarMatricula = async (req, res) => {
       data: dataAtualizada,
     });
 
-    res.json(matriculaAtualizada);
+    res.json({
+      message: "Matricula atualizada com sucesso!",
+      data: matriculaAtualizada
+    });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Erro ao atualizar matrícula." });

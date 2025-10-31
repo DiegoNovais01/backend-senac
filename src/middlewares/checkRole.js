@@ -17,7 +17,6 @@ export const checkRole = (papeisPermitidos) => {
       });
     }
     
-    console.log("oi")
     next();
   };
 };

@@ -2,7 +2,7 @@ import prisma from "../db.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 
-const JWT_SECRET = process.env.JWT_SECRET || "segredo_super_secreto";
+const JWT_SECRET = process.env.JWT_SECRET || "senha_token";
 
 // 🧍‍♂️ Registrar novo usuário
 export const registrarUsuario = async (req, res, next) => {

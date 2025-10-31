@@ -13,7 +13,6 @@ export const authMiddleware = (req, res, next) => {
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
     req.user = decoded; // salva o usuário logado no req
-    console.log("oi")
     next();
   } catch (err) {
     res.status(403).json({ error: "Token inválido ou expirado" });

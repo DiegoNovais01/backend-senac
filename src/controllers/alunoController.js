@@ -53,7 +53,6 @@ export const buscarAlunoPorId = async (req, res) => {
 // 🔹 Criar novo aluno
 export const criarAluno = async (req, res) => {
   try {
-    console.log("oi")
     const data = { ...req.body };
     const d = normalizarDataNascimento(data.data_nascimento);
     if (d) data.data_nascimento = d;
@@ -87,7 +86,11 @@ export const criarAluno = async (req, res) => {
 
     const novo = await prisma.alunos.create({ data });
     const { senha, ...novoSemSenha } = novo;
-    res.status(201).json(novoSemSenha);
+    
+    res.status(201).json({
+      message: "Aluno cadastrado com sucesso!",
+      aluno: novoSemSenha
+    });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Erro ao criar aluno." });
@@ -109,7 +112,7 @@ export const atualizarAluno = async (req, res) => {
       const cpf = data.cpf;
       const existsUsuario = await prisma.usuarios.findUnique({ where: { cpf } });
       const existsInstrutor = await prisma.instrutores.findUnique({ where: { cpf } });
-      const existsAluno = await prisma.alunos.findUnique({ where: { cpf } });
+      const existsAluno = await prisma.alunos.findFirst({ where: { cpf } });
       // if existsAluno and it's not the same record, conflict
       if ((existsAluno && existsAluno.id_aluno !== parseInt(id)) || existsUsuario || existsInstrutor) {
         return res.status(400).json({ error: 'CPF já cadastrado em outro registro' });
@@ -127,7 +130,10 @@ export const atualizarAluno = async (req, res) => {
       data,
     });
     const { senha, ...atualizadoSemSenha } = atualizado;
-    res.json(atualizadoSemSenha);
+    res.json({
+      message: "Aluno atualizado com sucesso!",
+      aluno: atualizadoSemSenha
+    });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Erro ao atualizar aluno." });
