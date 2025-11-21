@@ -13,11 +13,9 @@ import {
 
 const router = express.Router();
 
-// Rotas públicas (sem proteção)
-router.get("/:id", buscarAlunoPorId);
-
 // Rotas protegidas - requer autenticação E papel específico
 router.get("/", authMiddleware, checkRole(['admin', 'secretaria']), listarAlunos);
+router.get("/:id", authMiddleware, checkRole(['admin', 'secretaria']), buscarAlunoPorId);
 router.post("/", authMiddleware, checkRole(['admin', 'secretaria']), validateBody(alunoSchema), criarAluno);
 router.put("/:id", authMiddleware, checkRole(['admin', 'secretaria']), validateBody(alunoSchema), atualizarAluno);
 router.delete("/:id", authMiddleware, checkRole(['admin']), deletarAluno);

@@ -1,4 +1,6 @@
 import express from "express";
+import { authMiddleware } from "../middlewares/authMiddleware.js";
+import { checkRole } from "../middlewares/checkRole.js";
 import {
   listarCursos,
   buscarCursoPorId,
@@ -9,10 +11,11 @@ import {
 
 const router = express.Router();
 
-router.get("/", listarCursos);
-router.get("/:id", buscarCursoPorId);
-router.post("/", criarCurso);
-router.put("/:id", atualizarCurso);
-router.delete("/:id", deletarCurso);
+// Rotas dos cursos protegidas
+router.get("/", authMiddleware, checkRole(['admin', 'secretaria']), listarCursos);
+router.get("/:id", authMiddleware, checkRole(['admin', 'secretaria']), buscarCursoPorId);
+router.post("/", authMiddleware, checkRole(['admin', 'secretaria']), criarCurso);
+router.put("/:id", authMiddleware, checkRole(['admin', 'secretaria']), atualizarCurso);
+router.delete("/:id", authMiddleware, checkRole(['admin', 'secretaria']), deletarCurso);
 
 export default router;

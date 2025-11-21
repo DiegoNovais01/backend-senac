@@ -2,6 +2,7 @@ import express from "express";
 import dotenv from "dotenv";
 import prisma from "./db.js";
 
+
 import alunoRoutes from "./routes/alunoRoutes.js";
 import cursoRoutes from "./routes/cursoRoutes.js";
 import matriculaRoutes from "./routes/matriculaRoutes.js";
@@ -11,6 +12,13 @@ dotenv.config();
 const app = express();
 
 app.use(express.json());
+
+import { createApiLimiter } from "./middlewares/rateLimit.js";
+
+const apiLimiter = createApiLimiter({ windowMs: 15 * 60 * 1000, max: 250 })
+app.use(apiLimiter)
+
+app.set("trust proxy", 1)
 
 app.use("/alunos", alunoRoutes);
 app.use("/cursos", cursoRoutes);

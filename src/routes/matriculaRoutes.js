@@ -1,4 +1,6 @@
 import express from "express";
+import { authMiddleware } from "../middlewares/authMiddleware.js";
+import { checkRole } from "../middlewares/checkRole.js";
 import {
   listarMatriculas,
   criarMatricula,
@@ -8,9 +10,10 @@ import {
 
 const router = express.Router();
 
-router.get("/", listarMatriculas);
-router.post("/", criarMatricula);
-router.put("/:id", atualizarMatricula);
-router.delete("/:id", deletarMatricula);
+router.get("/", authMiddleware, checkRole(['admin', 'secretaria']), listarMatriculas);
+router.get("/:id", authMiddleware, checkRole(['admin', 'secretaria']), listarMatriculas);
+router.post("/", authMiddleware, checkRole(['admin', 'secretaria']), criarMatricula);
+router.put("/:id", authMiddleware, checkRole(['admin', 'secretaria']), atualizarMatricula);
+router.delete("/:id", authMiddleware, checkRole(['admin', 'secretaria']), deletarMatricula);
 
 export default router;
