@@ -1,17 +1,20 @@
 import express from "express";
+import cors from "cors";
 import dotenv from "dotenv";
 import prisma from "./db.js";
-
 
 import alunoRoutes from "./routes/alunoRoutes.js";
 import cursoRoutes from "./routes/cursoRoutes.js";
 import matriculaRoutes from "./routes/matriculaRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
+import { errorHandler } from "./middlewares/errorHandle.js";
 
 dotenv.config();
 const app = express();
 
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(cors());
 
 import { createApiLimiter } from "./middlewares/rateLimit.js";
 
@@ -24,6 +27,9 @@ app.use("/alunos", alunoRoutes);
 app.use("/cursos", cursoRoutes);
 app.use("/matriculas", matriculaRoutes);
 app.use("/auth", authRoutes);
+
+// Middleware global de erro (deve vir após todas as rotas)
+app.use(errorHandler);
 
 app.get("/", (req, res) => {
   res.send("✅ API do SENAC está rodando! 🚀");
