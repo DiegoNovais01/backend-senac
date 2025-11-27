@@ -7,6 +7,8 @@ import alunoRoutes from "./routes/alunoRoutes.js";
 import cursoRoutes from "./routes/cursoRoutes.js";
 import matriculaRoutes from "./routes/matriculaRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
+import swaggerUi from 'swagger-ui-express';
+import swaggerSpec from './docs/swagger.js';
 import { errorHandler } from "./middlewares/errorHandle.js";
 
 dotenv.config();
@@ -27,6 +29,7 @@ app.use("/alunos", alunoRoutes);
 app.use("/cursos", cursoRoutes);
 app.use("/matriculas", matriculaRoutes);
 app.use("/auth", authRoutes);
+app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // Middleware global de erro (deve vir após todas as rotas)
 app.use(errorHandler);
