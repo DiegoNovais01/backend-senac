@@ -5,6 +5,7 @@ import { validateBody } from "../middlewares/validateBody.js";
 import { matriculaSchema } from "../schemas/matriculaSchema.js";
 import {
   listarMatriculas,
+  buscarMatriculaPorId,
   criarMatricula,
   atualizarMatricula,
   deletarMatricula
@@ -13,7 +14,7 @@ import {
 const router = express.Router();
 
 router.get("/", authMiddleware, checkRole(['admin', 'secretaria']), listarMatriculas);
-router.get("/:id", authMiddleware, checkRole(['admin', 'secretaria']), listarMatriculas);
+router.get("/:id", authMiddleware, checkRole(['admin', 'secretaria']), buscarMatriculaPorId);
 router.post("/", authMiddleware, checkRole(['admin', 'secretaria']), validateBody(matriculaSchema), criarMatricula);
 router.put("/:id", authMiddleware, checkRole(['admin', 'secretaria']), validateBody(matriculaSchema), atualizarMatricula);
 router.delete("/:id", authMiddleware, checkRole(['admin', 'secretaria']), deletarMatricula);

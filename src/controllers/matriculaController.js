@@ -13,6 +13,22 @@ export const listarMatriculas = async (req, res) => {
   }
 };
 
+// 🔹 Buscar matrícula por ID
+export const buscarMatriculaPorId = async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    const matricula = await prisma.matriculas.findUnique({
+      where: { id_matricula: id },
+      include: { alunos: true, cursos: true },
+    });
+    if (!matricula) return res.status(404).json({ error: 'Matrícula não encontrada' });
+    res.json(matricula);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Erro ao buscar matrícula.' });
+  }
+};
+
 // 🔹 Criar matrícula
 export const criarMatricula = async (req, res) => {
   try {

@@ -41,7 +41,7 @@ app.get("/", (req, res) => {
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
-  console.log(`🚀 Servidor rodando na porta ${PORT}\n🔗 http://localhost:3000`);
+  console.log(`🚀 Servidor rodando na porta ${PORT}\n🔗 http://localhost:3000\n📄 http://localhost:3000/api/docs`);
 });
 
 process.on("SIGINT", async () => {

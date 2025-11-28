@@ -66,12 +66,12 @@ const options = {
     },
     security: [{ bearerAuth: [] }]
   },
-  apis: [] // we are defining docs here, not via JSDoc comments
+  apis: [], // estamos definindo a documentação aqui, não via comentários JSDoc
 };
 
 const swaggerSpec = swaggerJsdoc(options);
 
-// Manually add paths to the spec (for clarity and to avoid adding doc comments all over)
+// Adicionamos manualmente os caminhos (paths) à especificação por clareza, evitando ter comentários JSDoc espalhados
 swaggerSpec.paths = {
   '/auth/register': {
     post: {
@@ -140,8 +140,33 @@ swaggerSpec.paths = {
     delete: { tags: ['Cursos'], summary: 'Deletar curso', parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }], responses: { '200': { description: 'Removido' } } }
   },
   '/matriculas': {
-    get: { tags: ['Matriculas'], summary: 'Listar matriculas', responses: { '200': { description: 'Lista' } } },
-    post: { tags: ['Matriculas'], summary: 'Criar matricula', requestBody: { required: true, content: { 'application/json': { schema: { $ref: '#/components/schemas/Matricula' } } } }, responses: { '201': { description: 'Criada' } } }
+    get: { tags: ['Matriculas'], summary: 'Listar matriculas', security: [{ bearerAuth: [] }], responses: { '200': { description: 'Lista' } } },
+    post: { tags: ['Matriculas'], summary: 'Criar matricula', security: [{ bearerAuth: [] }], requestBody: { required: true, content: { 'application/json': { schema: { $ref: '#/components/schemas/Matricula' } } } }, responses: { '201': { description: 'Criada' } } }
+  }
+  ,
+  '/matriculas/{id}': {
+    get: {
+      tags: ['Matriculas'],
+      summary: 'Buscar matrícula por id',
+      security: [{ bearerAuth: [] }],
+      parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }],
+      responses: { '200': { description: 'Matrícula' }, '404': { description: 'Não encontrada' } }
+    },
+    put: {
+      tags: ['Matriculas'],
+      summary: 'Atualizar matrícula',
+      security: [{ bearerAuth: [] }],
+      parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }],
+      requestBody: { required: true, content: { 'application/json': { schema: { $ref: '#/components/schemas/Matricula' } } } },
+      responses: { '200': { description: 'Atualizado' } }
+    },
+    delete: {
+      tags: ['Matriculas'],
+      summary: 'Excluir matrícula',
+      security: [{ bearerAuth: [] }],
+      parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }],
+      responses: { '200': { description: 'Removido' } }
+    }
   }
 };
 
