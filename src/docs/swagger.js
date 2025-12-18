@@ -83,31 +83,72 @@ swaggerSpec.paths = {
           'application/json': { schema: { $ref: '#/components/schemas/Usuario' } }
         }
       },
-      responses: { '201': { description: 'Usuário criado' }, '400': { description: 'Erro de validação' } }
+      responses: {
+        '201': { description: 'Usuário criado' },
+        '400': { description: 'Erro de validação' }
+      }
     }
   },
   '/auth/login': {
     post: {
       tags: ['Auth'],
       summary: 'Fazer login',
-      requestBody: { required: true, content: { 'application/json': { schema: { type: 'object', properties: { email: { type: 'string' }, senha: { type: 'string' } }, required: ['email', 'senha'] } } } },
-      responses: { '200': { description: 'Retorna token e refreshToken' }, '401': { description: 'Credenciais inválidas' } }
+      requestBody: {
+        required: true,
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object', properties: { email: { type: 'string' }, senha: { type: 'string' } },
+              required: ['email', 'senha']
+            }
+          }
+        }
+      },
+      responses: {
+        '200': { description: 'Retorna token e refreshToken' },
+        '401': { description: 'Credenciais inválidas' }
+      }
     }
   },
   '/auth/refresh': {
     post: {
       tags: ['Auth'],
       summary: 'Renovar token',
-      requestBody: { required: true, content: { 'application/json': { schema: { type: 'object', properties: { refreshToken: { type: 'string' } }, required: ['refreshToken'] } } } },
-      responses: { '200': { description: 'Novo token' }, '401': { description: 'Refresh inválido/expirado' } }
+      requestBody: {
+        required: true,
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object', properties: { refreshToken: { type: 'string' } },
+              required: ['refreshToken']
+            }
+          }
+        }
+      },
+      responses: {
+        '200': { description: 'Novo token' },
+        '401': { description: 'Refresh inválido/expirado' }
+      }
     }
   },
   '/auth/logout': {
     post: {
       tags: ['Auth'],
       summary: 'Fazer logout (revoga refresh token)',
-      requestBody: { required: true, content: { 'application/json': { schema: { type: 'object', properties: { refreshToken: { type: 'string' } }, required: ['refreshToken'] } } } },
-      responses: { '200': { description: 'Logout realizado' } }
+      requestBody: {
+        required: true,
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object', properties: { refreshToken: { type: 'string' } },
+              required: ['refreshToken']
+            }
+          }
+        }
+      },
+      responses: {
+        '200': { description: 'Logout realizado' }
+      }
     }
   },
   '/auth/recuperar-senha': {
@@ -266,33 +307,157 @@ swaggerSpec.paths = {
       tags: ['Alunos'],
       summary: 'Listar alunos (admin/secretaria)',
       security: [{ bearerAuth: ['admin', 'secretaria'] }],
-      responses: { '200': { description: 'Lista de alunos' } }
+      responses: {
+        '200': { description: 'Lista de alunos' }
+      }
     },
     post: {
       tags: ['Alunos'],
       summary: 'Criar aluno (admin/secretaria)',
       security: [{ bearerAuth: [] }],
-      requestBody: { required: true, content: { 'application/json': { schema: { $ref: '#/components/schemas/Aluno' } } } },
-      responses: { '201': { description: 'Aluno criado' }, '400': { description: 'Erro de validação' } }
+      requestBody: {
+        required: true,
+        content: {
+          'application/json': {
+            schema: {
+              $ref: '#/components/schemas/Aluno'
+            }
+          }
+        }
+      },
+      responses: {
+        '201': { description: 'Aluno criado' },
+        '400': { description: 'Erro de validação' }
+      }
     }
   },
   '/alunos/{id}': {
-    get: { tags: ['Alunos'], summary: 'Buscar aluno por id', parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }], responses: { '200': { description: 'Aluno' }, '404': { description: 'Não encontrado' } } },
-    put: { tags: ['Alunos'], summary: 'Atualizar aluno', parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }], requestBody: { required: true, content: { 'application/json': { schema: { $ref: '#/components/schemas/Aluno' } } } }, responses: { '200': { description: 'Atualizado' } } },
-    delete: { tags: ['Alunos'], summary: 'Deletar aluno', parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }], responses: { '200': { description: 'Removido' } } }
+    get: {
+      tags: ['Alunos'],
+      summary: 'Buscar aluno por id',
+      parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }],
+      responses: {
+        '200': { description: 'Aluno' },
+        '404': { description: 'Não encontrado' }
+      }
+    },
+    put: {
+      tags: ['Alunos'],
+      summary: 'Atualizar aluno',
+      parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }],
+      requestBody: {
+        required: true,
+        content: {
+          'application/json': {
+            schema:
+              { $ref: '#/components/schemas/Aluno' }
+          }
+        }
+      },
+      responses: {
+        '200': { description: 'Atualizado' }
+      }
+    },
+    delete: {
+      tags: ['Alunos'], summary: 'Deletar aluno',
+      parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }],
+      responses: {
+        '200': { description: 'Removido' }
+      }
+    }
   },
   '/cursos': {
-    get: { tags: ['Cursos'], summary: 'Listar cursos', responses: { '200': { description: 'Lista de cursos' } } },
-    post: { tags: ['Cursos'], summary: 'Criar curso', requestBody: { required: true, content: { 'application/json': { schema: { $ref: '#/components/schemas/Curso' } } } }, responses: { '201': { description: 'Criado' } } }
+    get: {
+      tags: ['Cursos'],
+      summary: 'Listar cursos',
+      responses: {
+        '200': {
+          description: 'Lista de cursos'
+        }
+      }
+    },
+    post: {
+      tags: ['Cursos'],
+      summary: 'Criar curso',
+      requestBody: {
+        required: true,
+        content: {
+          'application/json': {
+            schema: { $ref: '#/components/schemas/Curso' }
+          }
+        }
+      },
+      responses: {
+        '201': { description: 'Criado' }
+      }
+    }
   },
   '/cursos/{id}': {
-    get: { tags: ['Cursos'], summary: 'Buscar curso por id', parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }], responses: { '200': { description: 'Curso' } } },
-    put: { tags: ['Cursos'], summary: 'Atualizar curso', parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }], requestBody: { required: true, content: { 'application/json': { schema: { $ref: '#/components/schemas/Curso' } } } }, responses: { '200': { description: 'Atualizado' } } },
-    delete: { tags: ['Cursos'], summary: 'Deletar curso', parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }], responses: { '200': { description: 'Removido' } } }
+    get: {
+      tags: ['Cursos'],
+      summary: 'Buscar curso por id',
+      parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }],
+      responses: {
+        '200': { description: 'Curso' }
+      }
+    },
+    put: {
+      tags: ['Cursos'],
+      summary: 'Atualizar curso',
+      parameters: [{
+        name: 'id',
+        in: 'path',
+        required: true,
+        schema: {
+          type: 'integer'
+        }
+      }],
+      requestBody: {
+        required: true,
+        content: {
+          'application/json': {
+            schema: { $ref: '#/components/schemas/Curso' }
+          }
+        }
+      },
+      responses: {
+        '200': { description: 'Atualizado' }
+      }
+    },
+    delete: {
+      tags: ['Cursos'],
+      summary: 'Deletar curso',
+      parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }],
+      responses: {
+        '200': { description: 'Removido' }
+      }
+    }
   },
   '/matriculas': {
-    get: { tags: ['Matriculas'], summary: 'Listar matriculas', security: [{ bearerAuth: [] }], responses: { '200': { description: 'Lista' } } },
-    post: { tags: ['Matriculas'], summary: 'Criar matricula', security: [{ bearerAuth: [] }], requestBody: { required: true, content: { 'application/json': { schema: { $ref: '#/components/schemas/Matricula' } } } }, responses: { '201': { description: 'Criada' } } }
+    get: {
+      tags: ['Matriculas'],
+      summary: 'Listar matriculas',
+      security: [{ bearerAuth: [] }],
+      responses: {
+        '200': { description: 'Lista' }
+      }
+    },
+    post: {
+      tags: ['Matriculas'],
+      summary: 'Criar matricula',
+      security: [{ bearerAuth: [] }],
+      requestBody: {
+        required: true,
+        content: {
+          'application/json': {
+            schema: { $ref: '#/components/schemas/Matricula' }
+          }
+        }
+      },
+      responses: {
+        '201': { description: 'Criada' }
+      }
+    }
   }
   ,
   '/matriculas/{id}': {
@@ -301,22 +466,36 @@ swaggerSpec.paths = {
       summary: 'Buscar matrícula por id',
       security: [{ bearerAuth: [] }],
       parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }],
-      responses: { '200': { description: 'Matrícula' }, '404': { description: 'Não encontrada' } }
+      responses: {
+        '200': { description: 'Matrícula' },
+        '404': { description: 'Não encontrada' }
+      }
     },
     put: {
       tags: ['Matriculas'],
       summary: 'Atualizar matrícula',
       security: [{ bearerAuth: [] }],
       parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }],
-      requestBody: { required: true, content: { 'application/json': { schema: { $ref: '#/components/schemas/Matricula' } } } },
-      responses: { '200': { description: 'Atualizado' } }
+      requestBody: {
+        required: true,
+        content: {
+          'application/json': {
+            schema: { $ref: '#/components/schemas/Matricula' }
+          }
+        }
+      },
+      responses: {
+        '200': { description: 'Atualizado' }
+      }
     },
     delete: {
       tags: ['Matriculas'],
       summary: 'Excluir matrícula',
       security: [{ bearerAuth: [] }],
       parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }],
-      responses: { '200': { description: 'Removido' } }
+      responses: {
+        '200': { description: 'Removido' }
+      }
     }
   }
 };
