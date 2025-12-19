@@ -1,4 +1,5 @@
 import prisma from "../db.js";
+import { getPagination, formatMeta } from "../utils/pagination.js";
 
 // Funções auxiliares
 const normalizeNivel = (valor) => {
@@ -27,8 +28,19 @@ const normalizeModalidade = (valor) => {
 
 // 🔹 Listar cursos
 export const listarCursos = async (req, res) => {
-  const cursos = await prisma.cursos.findMany();
-  res.json(cursos);
+  try {
+    const { page, limit, skip } = getPagination(req);
+
+    const [cursos, total] = await Promise.all([
+      prisma.cursos.findMany({ skip, take: limit, orderBy: { id_curso: 'asc' } }),
+      prisma.cursos.count(),
+    ]);
+
+    res.json({ data: cursos, meta: formatMeta(page, limit, total) });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Erro ao listar cursos." });
+  }
 };
 
 // 🔹 Buscar curso por ID

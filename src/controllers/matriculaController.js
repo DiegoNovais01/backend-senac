@@ -1,12 +1,21 @@
 import prisma from "../db.js";
+import { getPagination, formatMeta } from "../utils/pagination.js";
 
 // 🔹 Listar matrículas
 export const listarMatriculas = async (req, res) => {
   try {
-    const matriculas = await prisma.matriculas.findMany({
-      include: { alunos: true, cursos: true },
-    });
-    res.json(matriculas);
+    const { page, limit, skip } = getPagination(req);
+
+    const [matriculas, total] = await Promise.all([
+      prisma.matriculas.findMany({
+        skip,
+        take: limit,
+        include: { alunos: true, cursos: true },
+      }),
+      prisma.matriculas.count(),
+    ]);
+
+    res.json({ data: matriculas, meta: formatMeta(page, limit, total) });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Erro ao buscar matrículas." });

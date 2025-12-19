@@ -1,5 +1,6 @@
 import prisma from "../db.js";
 import bcrypt from "bcrypt";
+import { getPagination, formatMeta } from "../utils/pagination.js";
 
 // 🔹 Função auxiliar para validar/normalizar data_nascimento
 function normalizarDataNascimento(data) {
@@ -23,12 +24,19 @@ function normalizarDataNascimento(data) {
 // 🔹 Listar alunos
 export const listarAlunos = async (req, res) => {
   try {
-    const alunos = await prisma.alunos.findMany({
-      orderBy: { id_aluno: 'asc' } // mantém ordenação consistente
-    });
-    // remove senha do retorno
+    const { page, limit, skip } = getPagination(req);
+
+    const [alunos, total] = await Promise.all([
+      prisma.alunos.findMany({
+        skip,
+        take: limit,
+        orderBy: { id_aluno: 'asc' }
+      }),
+      prisma.alunos.count()
+    ]);
+
     const alunosSemSenha = alunos.map(({ senha, ...rest }) => rest);
-    res.json(alunosSemSenha);
+    res.json({ data: alunosSemSenha, meta: formatMeta(page, limit, total) });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Erro ao listar alunos." });
@@ -86,7 +94,7 @@ export const criarAluno = async (req, res) => {
 
     const novo = await prisma.alunos.create({ data });
     const { senha, ...novoSemSenha } = novo;
-    
+
     res.status(201).json({
       message: "Aluno cadastrado com sucesso!",
       aluno: novoSemSenha
