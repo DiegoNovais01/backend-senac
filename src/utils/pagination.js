@@ -8,4 +8,8 @@ export function getPagination(req) {
 export function formatMeta(page, limit, total) {
   const pages = Math.ceil(total / limit) || 1;
   return { page, limit, total, pages };
+<<<<<<< Updated upstream
 }
+=======
+}
+>>>>>>> Stashed changes

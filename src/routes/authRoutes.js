@@ -37,8 +37,11 @@ router.post("/logout-sessao", authMiddleware, logoutDaSessao);
 router.post("/logout-global", authMiddleware, logoutGlobal);
 
 // 📋 Gerenciamento de Usuários (ADMIN/DEBUG)
+<<<<<<< Updated upstream
 router.get("/usuarios-logados", checkRole(['admin']), listarUsuariosLogados);
 router.get("/usuarios-debug", checkRole(['admin']), listarTodosUsuariosComCredenciais); // protegido: apenas admin
+=======
+>>>>>>> Stashed changes
 router.get("/usuarios-logados", authMiddleware, checkRole(['admin']), listarUsuariosLogados);
 router.get("/usuarios-debug", authMiddleware, checkRole(['admin']), listarTodosUsuariosComCredenciais); // protegido: apenas admin
 
@@ -47,4 +50,8 @@ router.post("/recuperar-senha", validateBody(recuperarSenhaSchema), solicitarRec
 router.post("/resetar-senha", validateBody(resetarSenhaSchema), resetarSenha);
 router.post("/mudar-senha", authMiddleware, validateBody(mudarSenhaSchema), mudarSenha);
 
+<<<<<<< Updated upstream
 export default router;
+=======
+export default router;
+>>>>>>> Stashed changes
