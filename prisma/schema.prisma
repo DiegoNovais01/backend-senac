@@ -10,7 +10,7 @@ datasource db {
 model alunos {
   id_aluno        Int          @id @default(autoincrement())
   nome            String?      @db.VarChar(100)
-  cpf             String?      @db.VarChar(14)
+  cpf             String?      @unique(map: "unique_cpf_alunos") @db.VarChar(14)
   email           String?      @db.VarChar(100)
   telefone        String?      @db.VarChar(20)
   endereco        String?      @db.VarChar(255)
