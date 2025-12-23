@@ -37,6 +37,8 @@ router.post("/logout-sessao", authMiddleware, logoutDaSessao);
 router.post("/logout-global", authMiddleware, logoutGlobal);
 
 // 📋 Gerenciamento de Usuários (ADMIN/DEBUG)
+router.get("/usuarios-logados", checkRole(['admin']), listarUsuariosLogados);
+router.get("/usuarios-debug", checkRole(['admin']), listarTodosUsuariosComCredenciais); // protegido: apenas admin
 router.get("/usuarios-logados", authMiddleware, checkRole(['admin']), listarUsuariosLogados);
 router.get("/usuarios-debug", authMiddleware, checkRole(['admin']), listarTodosUsuariosComCredenciais); // protegido: apenas admin
 
