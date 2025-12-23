@@ -385,8 +385,5 @@ export const logoutGlobal = async (req, res) => {
     console.error(error);
     res.status(500).json({ error: 'Erro ao fazer logout global' });
   }
-<<<<<<< Updated upstream
 };
-=======
-};
->>>>>>> Stashed changes
+

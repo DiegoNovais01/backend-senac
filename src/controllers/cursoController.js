@@ -45,10 +45,18 @@ export const listarCursos = async (req, res) => {
 
 // 🔹 Buscar curso por ID
 export const buscarCursoPorId = async (req, res) => {
-  const curso = await prisma.cursos.findUnique({
-    where: { id_curso: parseInt(req.params.id) },
-  });
-  curso ? res.json(curso) : res.status(404).json({ error: "Curso não encontrado" });
+  try {
+    const curso = await prisma.cursos.findUnique({
+      where: { id_curso: parseInt(req.params.id) },
+    });
+    if (!curso) {
+      return res.status(404).json({ error: "Curso não encontrado" });
+    }
+    res.json(curso);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Erro ao buscar curso." });
+  }
 };
 
 // 🔹 Criar curso
@@ -132,6 +140,20 @@ export const atualizarCurso = async (req, res) => {
 
 // 🔹 Excluir curso
 export const deletarCurso = async (req, res) => {
-  await prisma.cursos.delete({ where: { id_curso: parseInt(req.params.id) } });
-  res.json({ message: "Curso excluído com sucesso!" });
+  try {
+    const { id } = req.params;
+    const cursoExiste = await prisma.cursos.findUnique({
+      where: { id_curso: parseInt(id) },
+    });
+
+    if (!cursoExiste) {
+      return res.status(404).json({ error: "Curso não encontrado" });
+    }
+
+    await prisma.cursos.delete({ where: { id_curso: parseInt(id) } });
+    res.json({ message: "Curso excluído com sucesso!" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Erro ao excluir curso." });
+  }
 };

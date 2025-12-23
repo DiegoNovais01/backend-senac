@@ -150,6 +150,20 @@ export const atualizarAluno = async (req, res) => {
 
 // 🔹 Deletar aluno
 export const deletarAluno = async (req, res) => {
-  await prisma.alunos.delete({ where: { id_aluno: parseInt(req.params.id) } });
-  res.json({ message: "Aluno removido com sucesso!" });
+  try {
+    const { id } = req.params;
+    const alunoExiste = await prisma.alunos.findUnique({
+      where: { id_aluno: parseInt(id) },
+    });
+
+    if (!alunoExiste) {
+      return res.status(404).json({ error: "Aluno não encontrado" });
+    }
+
+    await prisma.alunos.delete({ where: { id_aluno: parseInt(id) } });
+    res.json({ message: "Aluno removido com sucesso!" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Erro ao deletar aluno." });
+  }
 };
