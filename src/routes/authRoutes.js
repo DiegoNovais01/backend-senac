@@ -15,20 +15,26 @@ import { authLimiter } from "../middlewares/rateLimit.js";
 import { authMiddleware } from "../middlewares/authMiddleware.js";
 import { checkRole } from "../middlewares/checkRole.js";
 import { validateBody } from "../middlewares/validateBody.js";
-import { recuperarSenhaSchema, resetarSenhaSchema, mudarSenhaSchema } from "../schemas/authSchema.js";
+import { 
+  loginSchema, 
+  registerSchema,
+  recuperarSenhaSchema, 
+  resetarSenhaSchema, 
+  mudarSenhaSchema 
+} from "../schemas/authSchema.js";
 
 const router = express.Router();
 
 // 🔐 Autenticação básica
-router.post("/login", authLimiter, login);
-router.post("/register", register);
-router.post("/refresh", refresh);
-router.post("/logout", logout);
+router.post("/login", authLimiter, validateBody(loginSchema), login);
+router.post("/register", authLimiter, validateBody(registerSchema), register);
+router.post("/refresh", validateBody({ parse: (data) => data }), refresh);
+router.post("/logout", authMiddleware, logout);
 
-// 🔑 Recuperação de Senha
-router.post("/recuperar-senha", solicitarRecuperacaoSenha);
-router.post("/resetar-senha", resetarSenha);
-router.post("/mudar-senha", authMiddleware, mudarSenha);
+// 🔑 Recuperação de Senha (protegida contra brute force)
+router.post("/recuperar-senha", validateBody(recuperarSenhaSchema), solicitarRecuperacaoSenha);
+router.post("/resetar-senha", validateBody(resetarSenhaSchema), resetarSenha);
+router.post("/mudar-senha", authMiddleware, validateBody(mudarSenhaSchema), mudarSenha);
 
 // 👤 Perfil do Usuário Logado
 router.get("/meu-perfil", authMiddleware, obterMeuPerfil);
@@ -36,15 +42,12 @@ router.get("/minhas-sessoes", authMiddleware, minhasSessoes);
 router.post("/logout-sessao", authMiddleware, logoutDaSessao);
 router.post("/logout-global", authMiddleware, logoutGlobal);
 
-// 📋 Gerenciamento de Usuários (ADMIN/DEBUG)
-router.get("/usuarios-logados", checkRole(['admin']), listarUsuariosLogados);
-router.get("/usuarios-debug", checkRole(['admin']), listarTodosUsuariosComCredenciais); // protegido: apenas admin
+// 📋 Gerenciamento de Usuários (ADMIN ONLY - Protegido)
+// ⚠️ AVISO: Endpoints sensíveis - Use apenas em ambiente seguro
 router.get("/usuarios-logados", authMiddleware, checkRole(['admin']), listarUsuariosLogados);
-router.get("/usuarios-debug", authMiddleware, checkRole(['admin']), listarTodosUsuariosComCredenciais); // protegido: apenas admin
 
-// Validações para recuperação/mudança de senha
-router.post("/recuperar-senha", validateBody(recuperarSenhaSchema), solicitarRecuperacaoSenha);
-router.post("/resetar-senha", validateBody(resetarSenhaSchema), resetarSenha);
-router.post("/mudar-senha", authMiddleware, validateBody(mudarSenhaSchema), mudarSenha);
+// 🔴 ENDPOINT DEBUG - Removido em produção
+// Descomente apenas em desenvolvimento se necessário
+// router.get("/usuarios-debug", authMiddleware, checkRole(['admin']), listarTodosUsuariosComCredenciais);
 
 export default router;
