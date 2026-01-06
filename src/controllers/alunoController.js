@@ -1,6 +1,7 @@
 import prisma from "../db.js";
 import bcrypt from "bcrypt";
 import { getPagination, formatMeta } from "../utils/pagination.js";
+import { validarCPF, normalizarCPF } from "../utils/cpfValidator.js";
 
 // 🔹 Função auxiliar para validar/normalizar data_nascimento
 function normalizarDataNascimento(data) {
@@ -66,17 +67,26 @@ export const criarAluno = async (req, res) => {
     if (d) data.data_nascimento = d;
     else delete data.data_nascimento;
 
-    // Verificar CPF único entre tabelas (alunos, usuarios, instrutores)
+    // Validar e normalizar CPF
     if (data.cpf) {
-      // Para alunos, precisamos usar findFirst porque não temos índice único no cpf ainda
+      const cpfNormalizado = normalizarCPF(data.cpf);
+
+      // Validar formato do CPF
+      if (!validarCPF(cpfNormalizado)) {
+        return res.status(400).json({
+          error: 'CPF inválido. Deve conter 11 dígitos válidos (exemplo: 123.456.789-10)'
+        });
+      }
+
+      data.cpf = cpfNormalizado;
+
+      // Verificar CPF único entre tabelas (alunos, usuarios, instrutores)
       const existsAluno = await prisma.alunos.findFirst({
         where: { cpf: data.cpf }
       });
-      // Para usuários e instrutores podemos usar findUnique porque já têm @unique
       const existsUsuario = await prisma.usuarios.findFirst({
         where: { cpf: data.cpf }
       });
-
       const existsInstrutor = await prisma.instrutores.findUnique({
         where: { cpf: data.cpf }
       });
@@ -117,10 +127,20 @@ export const atualizarAluno = async (req, res) => {
 
     // Verificar CPF único entre tabelas se CPF for alterado
     if (data.cpf) {
-      const cpf = data.cpf;
-      const existsUsuario = await prisma.usuarios.findUnique({ where: { cpf } });
-      const existsInstrutor = await prisma.instrutores.findUnique({ where: { cpf } });
-      const existsAluno = await prisma.alunos.findFirst({ where: { cpf } });
+      const cpfNormalizado = normalizarCPF(data.cpf);
+
+      // Validar formato do CPF
+      if (!validarCPF(cpfNormalizado)) {
+        return res.status(400).json({
+          error: 'CPF inválido. Deve conter 11 dígitos válidos (exemplo: 123.456.789-10)'
+        });
+      }
+
+      data.cpf = cpfNormalizado;
+
+      const existsUsuario = await prisma.usuarios.findUnique({ where: { cpf: cpfNormalizado } });
+      const existsInstrutor = await prisma.instrutores.findUnique({ where: { cpf: cpfNormalizado } });
+      const existsAluno = await prisma.alunos.findFirst({ where: { cpf: cpfNormalizado } });
       // if existsAluno and it's not the same record, conflict
       if ((existsAluno && existsAluno.id_aluno !== parseInt(id)) || existsUsuario || existsInstrutor) {
         return res.status(400).json({ error: 'CPF já cadastrado em outro registro' });

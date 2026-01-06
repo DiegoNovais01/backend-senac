@@ -104,6 +104,21 @@ export const atualizarMatricula = async (req, res) => {
 export const deletarMatricula = async (req, res) => {
   try {
     const id_matricula = parseInt(req.params.id);
+
+    // Validar ID
+    if (isNaN(id_matricula)) {
+      return res.status(400).json({ error: "ID inválido - deve ser um número" });
+    }
+
+    // Verificar se matrícula existe
+    const matriculaExiste = await prisma.matriculas.findUnique({
+      where: { id_matricula }
+    });
+
+    if (!matriculaExiste) {
+      return res.status(404).json({ error: "Matrícula não encontrada" });
+    }
+
     await prisma.matriculas.delete({ where: { id_matricula } });
     res.json({ message: "Matrícula excluída com sucesso!" });
   } catch (err) {

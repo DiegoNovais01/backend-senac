@@ -1,5 +1,6 @@
 import prisma from "../db.js";
 import { getPagination, formatMeta } from "../utils/pagination.js";
+import { validarCPF, normalizarCPF } from "../utils/cpfValidator.js";
 
 // 🔹 Listar instrutores
 export const listarInstrutores = async (req, res) => {
@@ -43,14 +44,25 @@ export const criarInstrutor = async (req, res) => {
 
     // Verificar CPF único entre tabelas
     if (data.cpf) {
+      const cpfNormalizado = normalizarCPF(data.cpf);
+
+      // Validar formato do CPF
+      if (!validarCPF(cpfNormalizado)) {
+        return res.status(400).json({
+          error: 'CPF inválido. Deve conter 11 dígitos válidos (exemplo: 123.456.789-10)'
+        });
+      }
+
+      data.cpf = cpfNormalizado;
+
       const existsAluno = await prisma.alunos.findFirst({
-        where: { cpf: data.cpf }
+        where: { cpf: cpfNormalizado }
       });
       const existsUsuario = await prisma.usuarios.findFirst({
-        where: { cpf: data.cpf }
+        where: { cpf: cpfNormalizado }
       });
       const existsInstrutor = await prisma.instrutores.findUnique({
-        where: { cpf: data.cpf }
+        where: { cpf: cpfNormalizado }
       });
 
       if (existsAluno || existsUsuario || existsInstrutor) {
@@ -78,10 +90,20 @@ export const atualizarInstrutor = async (req, res) => {
 
     // Verificar CPF único se for alterado
     if (data.cpf) {
-      const cpf = data.cpf;
-      const existsAluno = await prisma.alunos.findFirst({ where: { cpf } });
-      const existsUsuario = await prisma.usuarios.findUnique({ where: { cpf } });
-      const existsInstrutor = await prisma.instrutores.findFirst({ where: { cpf } });
+      const cpfNormalizado = normalizarCPF(data.cpf);
+
+      // Validar formato do CPF
+      if (!validarCPF(cpfNormalizado)) {
+        return res.status(400).json({
+          error: 'CPF inválido. Deve conter 11 dígitos válidos (exemplo: 123.456.789-10)'
+        });
+      }
+
+      data.cpf = cpfNormalizado;
+
+      const existsAluno = await prisma.alunos.findFirst({ where: { cpf: cpfNormalizado } });
+      const existsUsuario = await prisma.usuarios.findUnique({ where: { cpf: cpfNormalizado } });
+      const existsInstrutor = await prisma.instrutores.findFirst({ where: { cpf: cpfNormalizado } });
 
       if ((existsInstrutor && existsInstrutor.id_instrutor !== parseInt(id)) || existsAluno || existsUsuario) {
         return res.status(400).json({ error: 'CPF já cadastrado em outro registro' });

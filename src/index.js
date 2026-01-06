@@ -3,6 +3,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import prisma from "./db.js";
 
+// Importar rotas
 import alunoRoutes from "./routes/alunoRoutes.js";
 import cursoRoutes from "./routes/cursoRoutes.js";
 import matriculaRoutes from "./routes/matriculaRoutes.js";
@@ -10,25 +11,71 @@ import authRoutes from "./routes/authRoutes.js";
 import instrutorRoutes from "./routes/instrutorRoutes.js";
 import categoriaRoutes from "./routes/categoriaRoutes.js";
 import avaliacaoRoutes from "./routes/avaliacaoRoutes.js";
+
+// Importar middlewares
 import swaggerUi from 'swagger-ui-express';
 import swaggerSpec from './docs/swagger.js';
 import { errorHandler } from "./middlewares/errorHandle.js";
+import { requestLogger } from "./middlewares/requestLogger.js";
+import { createApiLimiter, createReadLimiter, createWriteLimiter } from "./middlewares/rateLimit.js";
+import { sanitizeInputs, parseBooleanValues, validateRequestBody } from "./middlewares/validation.js";
+import { securityHeaders, hideServer, requestId, enforceJsonContentType, sanitizeHeaders } from "./middlewares/security.js";
+
+// Importar jobs e utilitários
 import cleanupRefreshTokens from './jobs/cleanupRefreshTokens.js';
+import { logger } from "./utils/logger.js";
 
 dotenv.config();
 const app = express();
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// ═══════════════════════════════════════════════════════════════════════════
+// CONFIGURAÇÃO DE BODY PARSER - Deve ser primeira coisa após criar app
+// ═══════════════════════════════════════════════════════════════════════════
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// ═══════════════════════════════════════════════════════════════════════════
+// MIDDLEWARES DE SEGURANÇA - Executam PRIMEIRO
+// ═══════════════════════════════════════════════════════════════════════════
+app.use(hideServer);               // Remove headers de informação do servidor
+app.use(securityHeaders);          // Adiciona headers de segurança HTTP
+app.use(requestId);                // Adiciona ID único a cada requisição
+app.use(sanitizeHeaders);          // Remove headers perigosos
+app.use(enforceJsonContentType);   // Valida Content-Type para POST/PUT/PATCH
+
+// ═══════════════════════════════════════════════════════════════════════════
+// MIDDLEWARES GLOBAIS - Executam para TODAS as requisições
+// ═══════════════════════════════════════════════════════════════════════════
 app.use(cors());
+app.set("trust proxy", 1); // Para funcionar atrás de proxy (importante para rate limiting)
 
-import { createApiLimiter } from "./middlewares/rateLimit.js";
+// Logging de requisições (agora mais bem estruturado)
+app.use(requestLogger);
 
-const apiLimiter = createApiLimiter({ windowMs: 15 * 60 * 1000, max: 250 })
-app.use(apiLimiter)
+// Sanitização de inputs (remover espaços extras)
+app.use(sanitizeInputs);
 
-app.set("trust proxy", 1)
+// Parse de valores booleanos
+app.use(parseBooleanValues);
 
+// ═══════════════════════════════════════════════════════════════════════════
+// RATE LIMITING - Proteger contra abuso
+// ═══════════════════════════════════════════════════════════════════════════
+const apiLimiter = createApiLimiter({ windowMs: 15 * 60 * 1000, max: 250 });
+const readLimiter = createReadLimiter({ windowMs: 15 * 60 * 1000, max: 300 });
+const writeLimiter = createWriteLimiter({ windowMs: 15 * 60 * 1000, max: 50 });
+
+// Aplicar limiter global (geral para toda API)
+app.use("/alunos", apiLimiter);
+app.use("/cursos", apiLimiter);
+app.use("/matriculas", apiLimiter);
+app.use("/auth", apiLimiter);
+app.use("/instrutores", apiLimiter);
+app.use("/categorias", apiLimiter);
+app.use("/avaliacoes", apiLimiter);
+// ═══════════════════════════════════════════════════════════════════════════
+// ROTAS
+// ═══════════════════════════════════════════════════════════════════════════
 app.use("/alunos", alunoRoutes);
 app.use("/cursos", cursoRoutes);
 app.use("/matriculas", matriculaRoutes);
@@ -36,33 +83,87 @@ app.use("/auth", authRoutes);
 app.use("/instrutores", instrutorRoutes);
 app.use("/categorias", categoriaRoutes);
 app.use("/avaliacoes", avaliacaoRoutes);
+
+// ═══════════════════════════════════════════════════════════════════════════
+// DOCUMENTAÇÃO
+// ═══════════════════════════════════════════════════════════════════════════
 app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
-// Middleware global de erro (deve vir após todas as rotas)
-app.use(errorHandler);
-
+// ═══════════════════════════════════════════════════════════════════════════
+// ROTAS GERAIS
+// ═══════════════════════════════════════════════════════════════════════════
 app.get("/", (req, res) => {
-  res.send("✅ API do SENAC está rodando! 🚀");
+  res.json({
+    success: true,
+    message: "✅ API do SENAC está rodando! 🚀",
+    version: "1.0.0",
+    endpoints: {
+      docs: "http://localhost:3000/api/docs",
+      health: "http://localhost:3000/health"
+    }
+  });
 });
 
+app.get("/health", (req, res) => {
+  res.json({
+    success: true,
+    status: "healthy",
+    timestamp: new Date().toISOString()
+  });
+});
+
+// ═══════════════════════════════════════════════════════════════════════════
+// MIDDLEWARE DE ERRO GLOBAL - DEVE SER O ÚLTIMO
+// ═══════════════════════════════════════════════════════════════════════════
+app.use(errorHandler);
+
+// ═══════════════════════════════════════════════════════════════════════════
+// INICIALIZAÇÃO DO SERVIDOR
+// ═══════════════════════════════════════════════════════════════════════════
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
-  console.log(`🚀 Servidor rodando na porta ${PORT}\n🔗 http://localhost:3000\n📄 http://localhost:3000/api/docs`);
+  logger.info(`🚀 Servidor rodando na porta ${PORT}`);
+  logger.info(`📄 Documentação: http://localhost:${PORT}/api/docs`);
+  logger.info(`❤️  Health check: http://localhost:${PORT}/health`);
 });
 
+// ═══════════════════════════════════════════════════════════════════════════
+// TRATAMENTO DE ENCERRAMENTO GRACIOSOS
+// ═══════════════════════════════════════════════════════════════════════════
 process.on("SIGINT", async () => {
+  logger.info("🛑 Recebido sinal SIGINT - encerrando graciosamente...");
   await prisma.$disconnect();
-  console.log("🧹 Prisma desconectado. Servidor encerrado.");
+  logger.info("🧹 Prisma desconectado.");
   process.exit(0);
 });
 
-// Inicia job de limpeza de refresh tokens: executa na inicialização e a cada 6 horas
+process.on("SIGTERM", async () => {
+  logger.info("🛑 Recebido sinal SIGTERM - encerrando graciosamente...");
+  await prisma.$disconnect();
+  logger.info("🧹 Prisma desconectado.");
+  process.exit(0);
+});
+
+// ═══════════════════════════════════════════════════════════════════════════
+// JOBS AGENDADOS
+// ═══════════════════════════════════════════════════════════════════════════
 (async () => {
   try {
     await cleanupRefreshTokens();
-    setInterval(() => cleanupRefreshTokens(), 6 * 60 * 60 * 1000); // 6 horas
+    logger.info("✅ Limpeza de refresh tokens executada na inicialização");
+    
+    // Executa a cada 6 horas
+    setInterval(async () => {
+      try {
+        await cleanupRefreshTokens();
+      } catch (err) {
+        logger.error("❌ Erro ao limpar refresh tokens:", { error: err.message });
+      }
+    }, 6 * 60 * 60 * 1000);
+    
+    logger.info("⏰ Job de limpeza de tokens agendado para executar a cada 6 horas");
   } catch (err) {
-    console.error('Erro ao iniciar cleanupRefreshTokens:', err);
+    logger.error("❌ Erro ao iniciar cleanupRefreshTokens:", { error: err.message });
   }
 })();
