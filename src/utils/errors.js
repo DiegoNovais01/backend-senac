@@ -118,36 +118,36 @@ export class TooManyRequestsError extends AppError {
  */
 export const createErrorFromPrisma = (error) => {
   const code = error.code;
-  
+
   switch (code) {
     case 'P2002': // Unique constraint failed
       return new ConflictError(
         `${error.meta?.target?.[0] || 'Campo'} já existe`,
         error.meta?.target?.[0]
       );
-    
+
     case 'P2025': // Record not found
       return new NotFoundError(
         'Registro não encontrado',
         error.meta?.modelName || 'Recurso'
       );
-    
+
     case 'P2003': // Foreign key constraint failed
       return new BadRequestError(
         `Referência inválida para ${error.meta?.relationName || 'outro recurso'}`
       );
-    
+
     case 'P2014': // Required relation violation
       return new BadRequestError(
         `Não pode deletar este registro pois está vinculado a outros registros`
       );
-    
+
     case 'P2000': // Value too long for column
       return new ValidationError('Um dos valores é muito longo');
-    
+
     case 'P2001': // The record to delete does not exist
       return new NotFoundError('Registro a deletar não encontrado');
-    
+
     default:
       return new InternalServerError(`Erro de banco de dados: ${error.message}`, error);
   }
@@ -162,6 +162,6 @@ export const createErrorFromZod = (error) => {
     message: issue.message,
     code: issue.code
   }));
-  
+
   return new ValidationError('Validação falhou', { issues });
 };

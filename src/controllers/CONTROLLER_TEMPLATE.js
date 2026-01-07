@@ -42,16 +42,16 @@ export const listarRecursos = async (req, res, next) => {
   try {
     // 1. Extrair parâmetros da query
     const { page = 1, limit = PAGINATION.DEFAULT_LIMIT } = req.query;
-    
+
     // 2. Calcular skip e take
     const { skip, take } = getPagination(page, limit, PAGINATION.MAX_LIMIT);
-    
+
     // 3. Log da operação
     logger.info('Listando recursos', { page, limit });
-    
+
     // 4. Buscar total
     const total = await prisma.recurso.count();
-    
+
     // 5. Buscar registros
     const recursos = await prisma.recurso.findMany({
       skip,
@@ -66,9 +66,9 @@ export const listarRecursos = async (req, res, next) => {
         // senha: false // NUNCA retornar senhas
       }
     });
-    
+
     logger.info(`${recursos.length} recursos retornados`);
-    
+
     // 6. Retornar com metadata de paginação
     return ApiResponse.success(res, 'Recursos listados com sucesso', {
       recursos,
@@ -81,7 +81,7 @@ export const listarRecursos = async (req, res, next) => {
         hasPrevPage: page > 1
       }
     });
-    
+
   } catch (error) {
     logger.error('Erro ao listar recursos', { error: error.message });
     next(error);
@@ -102,25 +102,25 @@ export const obterRecurso = async (req, res, next) => {
   try {
     // 1. Validar ID (já validado pelo middleware, mas podemos validar novamente)
     const id = req.validatedId || parseInt(req.params.id);
-    
+
     logger.info('Buscando recurso', { id });
-    
+
     // 2. Buscar no banco
     const recurso = await prisma.recurso.findUnique({
       where: { id }
     });
-    
+
     // 3. Verificar se existe
     if (!recurso) {
       logger.warn(`Recurso não encontrado: ${id}`);
       return ApiResponse.notFound(res, 'Recurso não encontrado');
     }
-    
+
     logger.info(`Recurso encontrado: ${id}`);
-    
+
     // 4. Retornar
     return ApiResponse.success(res, 'Recurso encontrado', recurso);
-    
+
   } catch (error) {
     logger.error('Erro ao obter recurso', { error: error.message });
     next(error);
@@ -142,17 +142,17 @@ export const obterRecurso = async (req, res, next) => {
 export const criarRecurso = async (req, res, next) => {
   try {
     const { nome, email, cpf } = req.body;
-    
+
     logger.info('Iniciando criação de recurso', { email });
-    
+
     // 1. VALIDAR - Cada campo
     try {
       // Validar nome
       validators.validateString(nome, 3, 100);
-      
+
       // Validar email
       validators.validateEmail(email);
-      
+
       // Validar CPF (se aplicável)
       if (cpf && !validarCPF(cpf)) {
         throw new Error('CPF inválido');
@@ -163,30 +163,30 @@ export const criarRecurso = async (req, res, next) => {
         error: validationError.message
       });
     }
-    
+
     // 2. VERIFICAR DUPLICATAS
     // Verificar email duplicado
     const recursoComEmail = await prisma.recurso.findUnique({
       where: { email }
     });
-    
+
     if (recursoComEmail) {
       logger.warn(`Email duplicado: ${email}`);
       return ApiResponse.conflict(res, 'Email já está em uso', { field: 'email' });
     }
-    
+
     // Verificar CPF duplicado (se aplicável)
     if (cpf) {
       const recursoComCpf = await prisma.recurso.findUnique({
         where: { cpf: normalizarCPF(cpf) }
       });
-      
+
       if (recursoComCpf) {
         logger.warn(`CPF duplicado: ${cpf}`);
         return ApiResponse.conflict(res, 'CPF já está em uso', { field: 'cpf' });
       }
     }
-    
+
     // 3. CRIAR
     const novoRecurso = await prisma.recurso.create({
       data: {
@@ -196,12 +196,12 @@ export const criarRecurso = async (req, res, next) => {
         // Outros campos...
       }
     });
-    
+
     logger.info(`Recurso criado com sucesso`, { id: novoRecurso.id, email });
-    
+
     // 4. RETORNAR
     return ApiResponse.created(res, 'Recurso criado com sucesso', novoRecurso);
-    
+
   } catch (error) {
     logger.error(`Erro ao criar recurso: ${error.message}`);
     next(error);
@@ -227,19 +227,19 @@ export const atualizarRecurso = async (req, res, next) => {
   try {
     const id = req.validatedId || parseInt(req.params.id);
     const { nome, email, cpf } = req.body;
-    
+
     logger.info('Iniciando atualização de recurso', { id });
-    
+
     // 1. VERIFICAR EXISTÊNCIA
     const recurso = await prisma.recurso.findUnique({
       where: { id }
     });
-    
+
     if (!recurso) {
       logger.warn(`Recurso não encontrado para atualizar: ${id}`);
       return ApiResponse.notFound(res, 'Recurso não encontrado');
     }
-    
+
     // 2. VALIDAR CAMPOS (apenas os que serão atualizados)
     try {
       if (nome !== undefined) {
@@ -259,7 +259,7 @@ export const atualizarRecurso = async (req, res, next) => {
         error: validationError.message
       });
     }
-    
+
     // 3. VERIFICAR DUPLICATAS (para campos únicos)
     if (email && email !== recurso.email) {
       const outro = await prisma.recurso.findUnique({
@@ -270,7 +270,7 @@ export const atualizarRecurso = async (req, res, next) => {
         return ApiResponse.conflict(res, 'Email já está em uso', { field: 'email' });
       }
     }
-    
+
     // 4. ATUALIZAR
     const recursoAtualizado = await prisma.recurso.update({
       where: { id },
@@ -280,12 +280,12 @@ export const atualizarRecurso = async (req, res, next) => {
         ...(cpf && { cpf: normalizarCPF(cpf) })
       }
     });
-    
+
     logger.info(`Recurso atualizado com sucesso: ${id}`);
-    
+
     // 5. RETORNAR
     return ApiResponse.success(res, 'Recurso atualizado com sucesso', recursoAtualizado);
-    
+
   } catch (error) {
     logger.error(`Erro ao atualizar recurso: ${error.message}`);
     next(error);
@@ -305,25 +305,25 @@ export const atualizarRecurso = async (req, res, next) => {
 export const deletarRecurso = async (req, res, next) => {
   try {
     const id = req.validatedId || parseInt(req.params.id);
-    
+
     logger.info('Iniciando deleção de recurso', { id });
-    
+
     // 1. VERIFICAR EXISTÊNCIA
     const recurso = await prisma.recurso.findUnique({
       where: { id }
     });
-    
+
     if (!recurso) {
       logger.warn(`Recurso não encontrado para deletar: ${id}`);
       return ApiResponse.notFound(res, 'Recurso não encontrado');
     }
-    
+
     // 2. VERIFICAR DEPENDÊNCIAS (se houver)
     // Exemplo: verificar se há matriculas vinculadas
     const temDependencias = await prisma.matricula.count({
       where: { recursoId: id }
     });
-    
+
     if (temDependencias > 0) {
       logger.warn(`Recurso não pode ser deletado, tem dependências: ${id}`);
       return ApiResponse.badRequest(
@@ -331,17 +331,17 @@ export const deletarRecurso = async (req, res, next) => {
         'Não é possível deletar este recurso pois existem dados vinculados'
       );
     }
-    
+
     // 3. DELETAR
     await prisma.recurso.delete({
       where: { id }
     });
-    
+
     logger.info(`Recurso deletado com sucesso: ${id}`);
-    
+
     // 4. RETORNAR
     return ApiResponse.success(res, 'Recurso deletado com sucesso', { id });
-    
+
   } catch (error) {
     logger.error(`Erro ao deletar recurso: ${error.message}`);
     next(error);
@@ -358,9 +358,9 @@ export const deletarRecurso = async (req, res, next) => {
 export const operacaoCompleta = async (req, res, next) => {
   try {
     const { recursoId, acao } = req.body;
-    
+
     logger.info('Operação complexa iniciada', { recursoId, acao, userId: req.user?.id });
-    
+
     // 1. VALIDAR AUTORIZAÇÃO
     if (req.user.role !== ROLES.ADMIN) {
       logger.warn(`Acesso negado para operação complexa`, { userId: req.user.id, role: req.user.role });
@@ -369,7 +369,7 @@ export const operacaoCompleta = async (req, res, next) => {
         'Apenas administradores podem executar esta operação'
       );
     }
-    
+
     // 2. VALIDAR PARÂMETROS
     try {
       validators.validateId(recursoId);
@@ -380,16 +380,16 @@ export const operacaoCompleta = async (req, res, next) => {
         error: error.message
       });
     }
-    
+
     // 3. BUSCAR RECURSO
     const recurso = await prisma.recurso.findUnique({
       where: { id: parseInt(recursoId) }
     });
-    
+
     if (!recurso) {
       return ApiResponse.notFound(res, 'Recurso não encontrado');
     }
-    
+
     // 4. EXECUTAR LÓGICA
     let resultado;
     switch (acao) {
@@ -400,7 +400,7 @@ export const operacaoCompleta = async (req, res, next) => {
         });
         logger.info(`Recurso ativado: ${recursoId}`);
         break;
-        
+
       case 'desativar':
         resultado = await prisma.recurso.update({
           where: { id: parseInt(recursoId) },
@@ -408,7 +408,7 @@ export const operacaoCompleta = async (req, res, next) => {
         });
         logger.info(`Recurso desativado: ${recursoId}`);
         break;
-        
+
       case 'arquivar':
         resultado = await prisma.recurso.update({
           where: { id: parseInt(recursoId) },
@@ -417,14 +417,14 @@ export const operacaoCompleta = async (req, res, next) => {
         logger.info(`Recurso arquivado: ${recursoId}`);
         break;
     }
-    
+
     // 5. RETORNAR SUCESSO
     return ApiResponse.success(
       res,
       `Recurso ${acao}do com sucesso`,
       resultado
     );
-    
+
   } catch (error) {
     logger.error(`Erro na operação complexa: ${error.message}`);
     next(error);

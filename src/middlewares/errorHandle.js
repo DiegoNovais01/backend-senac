@@ -45,7 +45,7 @@ export function errorHandler(err, req, res, next) {
       message: e.message,
       code: e.code
     })) || [];
-    
+
     logger.warn(`Validação falhou em ${req.path}`, { issues });
     return ApiResponse.validationError(res, 'Validação falhou', { issues });
   }
@@ -55,11 +55,11 @@ export function errorHandler(err, req, res, next) {
   // ═══════════════════════════════════════════════════════════════════════
   if (err.code && err.code.startsWith('P')) {
     const prismaError = createErrorFromPrisma(err);
-    logger.warn(`Erro Prisma [${err.code}] em ${req.path}`, { 
+    logger.warn(`Erro Prisma [${err.code}] em ${req.path}`, {
       meta: err.meta,
-      originalError: err.message 
+      originalError: err.message
     });
-    
+
     return ApiResponse.error(res, prismaError.statusCode, prismaError.message, {
       code: err.code,
       details: err.meta

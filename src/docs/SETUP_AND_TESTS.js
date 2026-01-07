@@ -61,7 +61,7 @@ export const NPM_SCRIPTS = {
 // ═════════════════════════════════════════════════════════════════════════════
 
 export const MANUAL_TESTS = {
-  
+
   // 1️⃣ Health Check
   health_check: {
     method: 'GET',
@@ -73,7 +73,7 @@ export const MANUAL_TESTS = {
       status: 'healthy'
     }
   },
-  
+
   // 2️⃣ Criar Aluno (Validação)
   criar_aluno_valido: {
     method: 'POST',
@@ -90,7 +90,7 @@ export const MANUAL_TESTS = {
     description: 'Criar aluno com CPF válido',
     expectedStatus: 201
   },
-  
+
   criar_aluno_cpf_invalido: {
     method: 'POST',
     url: 'http://localhost:3000/alunos',
@@ -107,7 +107,7 @@ export const MANUAL_TESTS = {
     expectedStatus: 400,
     expectedError: 'CPF inválido'
   },
-  
+
   criar_aluno_cpf_duplicado: {
     method: 'POST',
     url: 'http://localhost:3000/alunos',
@@ -124,7 +124,7 @@ export const MANUAL_TESTS = {
     expectedStatus: 409,
     expectedError: 'CPF já existe'
   },
-  
+
   // 3️⃣ Validação de ID
   deletar_aluno_id_invalido: {
     method: 'DELETE',
@@ -136,7 +136,7 @@ export const MANUAL_TESTS = {
     expectedStatus: 400,
     expectedError: 'ID inválido'
   },
-  
+
   deletar_aluno_nao_existe: {
     method: 'DELETE',
     url: 'http://localhost:3000/alunos/99999',
@@ -147,7 +147,7 @@ export const MANUAL_TESTS = {
     expectedStatus: 404,
     expectedError: 'não encontrado'
   },
-  
+
   // 4️⃣ Rate Limiting
   rate_limit_test: {
     method: 'GET',
@@ -156,7 +156,7 @@ export const MANUAL_TESTS = {
     expectedStatus: 429,
     expectedError: 'Muitas requisições'
   },
-  
+
   // 5️⃣ Security Headers
   check_security_headers: {
     method: 'GET',
@@ -169,7 +169,7 @@ export const MANUAL_TESTS = {
       'X-Request-ID': 'deve estar presente'
     }
   },
-  
+
   // 6️⃣ Content-Type Enforcement
   content_type_json_required: {
     method: 'POST',
@@ -183,7 +183,7 @@ export const MANUAL_TESTS = {
     expectedStatus: 415,
     expectedError: 'Content-Type deve ser application/json'
   },
-  
+
   // 7️⃣ Paginação
   listar_com_paginacao: {
     method: 'GET',
@@ -343,32 +343,32 @@ describe('Aluno API - Validação', () => {
 // ═════════════════════════════════════════════════════════════════════════════
 
 export const TROUBLESHOOTING = {
-  
+
   'Erro: Cannot find module': {
     causa: 'Dependências não instaladas',
     solucao: 'npm install'
   },
-  
+
   'Erro: DATABASE_URL not set': {
     causa: '.env não configurado',
     solucao: 'Copiar .env.example para .env e preencher valores'
   },
-  
+
   'Erro: EADDRINUSE: address already in use :::3000': {
     causa: 'Porta 3000 já em uso',
     solucao: 'matar processo ou mudar PORT no .env'
   },
-  
+
   'Erro: connect ECONNREFUSED': {
     causa: 'Banco de dados não conectado',
     solucao: 'Verificar DATABASE_URL e se MySQL está rodando'
   },
-  
+
   'Erro: Rate limit retorna 429 muito rápido': {
     causa: 'Rate limit muito restritivo',
     solucao: 'Aumentar max em .env (RATE_LIMIT_*_MAX)'
   },
-  
+
   'Log não aparecendo': {
     causa: 'LOG_LEVEL configurado para nível mais alto',
     solucao: 'Mudar LOG_LEVEL no .env para INFO ou DEBUG'

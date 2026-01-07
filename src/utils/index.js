@@ -4,8 +4,8 @@ export { ApiResponse, ERROR_MESSAGES } from './apiResponse.js';
 export { validators, validateQueryParams, validateBodyNotEmpty } from './validators.js';
 export { validarCPF, normalizarCPF, formatarCPF } from './cpfValidator.js';
 export { getPagination, formatMeta } from './pagination.js';
-export { 
-  ROLES, 
+export {
+  ROLES,
   VALID_ROLES,
   COURSE_LEVELS,
   VALID_LEVELS,

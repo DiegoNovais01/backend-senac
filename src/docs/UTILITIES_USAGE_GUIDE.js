@@ -214,10 +214,10 @@ export const example_pagination = async (req, res) => {
   try {
     // Extrair page e limit da query
     const { page = 1, limit = 10 } = req.query;
-    
+
     // Validar e calcular offset
     const { skip, take } = getPagination(page, limit);
-    
+
     // Usar no banco de dados
     const total = await prisma.aluno.count();
     const alunos = await prisma.aluno.findMany({
@@ -225,7 +225,7 @@ export const example_pagination = async (req, res) => {
       take,
       orderBy: { id: 'desc' }
     });
-    
+
     // Retornar com meta de paginação
     return ApiResponse.success(res, 'Alunos listados', {
       alunos,
@@ -238,7 +238,7 @@ export const example_pagination = async (req, res) => {
         hasPrevPage: page > 1
       }
     });
-    
+
   } catch (error) {
     logger.error('Erro ao listar alunos', { error: error.message });
     next(error);
@@ -263,7 +263,7 @@ export const example_errors = async (req, res, next) => {
     if (!req.body.email) {
       throw new ValidationError('Email é obrigatório', { field: 'email' });
     }
-    
+
     // Recurso não existe - status 404
     const aluno = await prisma.aluno.findUnique({
       where: { id: req.params.id }
@@ -271,7 +271,7 @@ export const example_errors = async (req, res, next) => {
     if (!aluno) {
       throw new NotFoundError('Aluno não encontrado', 'Aluno');
     }
-    
+
     // Conflito - status 409
     const alunoExistente = await prisma.aluno.findUnique({
       where: { cpf: req.body.cpf }
@@ -279,12 +279,12 @@ export const example_errors = async (req, res, next) => {
     if (alunoExistente) {
       throw new ConflictError('CPF já existe', 'cpf');
     }
-    
+
     // Sem permissão - status 403
     if (req.user.role !== ROLES.ADMIN) {
       throw new AuthorizationError('Apenas admins podem fazer isso');
     }
-    
+
   } catch (error) {
     // Erros customizados são capturados pelo errorHandler middleware
     next(error);
@@ -299,10 +299,10 @@ export const criarAlunoCompleto = async (req, res, next) => {
   try {
     // 1. LOG - início da operação
     logger.info('Iniciando criação de aluno', { body: req.body });
-    
+
     // 2. VALIDAÇÃO - todos os campos obrigatórios
     const { nome, email, cpf } = req.body;
-    
+
     // Usar validators
     try {
       validators.validateString(nome, 3, 100);
@@ -311,23 +311,23 @@ export const criarAlunoCompleto = async (req, res, next) => {
       logger.warn(`Validação falhou: ${error.message}`);
       return ApiResponse.validationError(res, 'Dados inválidos', { error: error.message });
     }
-    
+
     // 3. VALIDAÇÃO - CPF
     if (!validarCPF(cpf)) {
       logger.warn(`CPF inválido: ${cpf}`);
       return ApiResponse.badRequest(res, 'CPF inválido');
     }
-    
+
     // 4. VERIFICAR DUPLICATA
     const alunoExistente = await prisma.aluno.findUnique({
       where: { cpf: normalizarCPF(cpf) }
     });
-    
+
     if (alunoExistente) {
       logger.warn(`Tentativa de criar aluno com CPF duplicado: ${cpf}`);
       return ApiResponse.conflict(res, 'CPF já existe', { field: 'cpf' });
     }
-    
+
     // 5. CRIAR no banco
     const novoAluno = await prisma.aluno.create({
       data: {
@@ -336,17 +336,17 @@ export const criarAlunoCompleto = async (req, res, next) => {
         cpf: normalizarCPF(cpf)
       }
     });
-    
+
     // 6. LOG - sucesso
     logger.info(`Aluno criado com sucesso`, { alunoId: novoAluno.id, email });
-    
+
     // 7. RESPOSTA - sucesso
     return ApiResponse.created(res, 'Aluno criado com sucesso', novoAluno);
-    
+
   } catch (error) {
     // 8. LOG - erro
     logger.error(`Erro ao criar aluno: ${error.message}`);
-    
+
     // 9. PASSAR para errorHandler
     next(error);
   }

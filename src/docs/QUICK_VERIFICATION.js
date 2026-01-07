@@ -17,17 +17,17 @@ export const CREATED_FILES = {
   'src/utils/constants.js': '✅ Constantes da aplicação',
   'src/utils/errors.js': '✅ Classes de erro customizadas',
   'src/utils/index.js': '✅ Exportação centralizada',
-  
+
   // Middlewares
   'src/middlewares/validation.js': '✅ Validação centralizada',
   'src/middlewares/security.js': '✅ Headers de segurança HTTP',
   'src/middlewares/requestLogger.js': '✅ Logging de requisições',
-  
+
   // Documentação
   'src/docs/API_RESPONSE_GUIDE.js': '✅ Guia de formato de respostas',
   'src/docs/UTILITIES_USAGE_GUIDE.js': '✅ Exemplos de uso dos utilitários',
   'src/docs/SETUP_AND_TESTS.js': '✅ Instruções de setup e testes',
-  
+
   // Configuração
   '.env.example': '✅ Arquivo de exemplo de configuração',
   'IMPROVEMENTS.md': '✅ Documentação das melhorias'
@@ -46,7 +46,7 @@ export const MODIFIED_FILES = {
     '✅ Health check endpoint adicionado',
     '✅ Tratamento gracioso de encerramento'
   ],
-  
+
   'src/middlewares/errorHandle.js': [
     '✅ Importa classes de erro customizadas',
     '✅ Importa logger e ApiResponse',
@@ -55,7 +55,7 @@ export const MODIFIED_FILES = {
     '✅ Trata erros Prisma com códigos específicos',
     '✅ Logging estruturado de erros'
   ],
-  
+
   'src/middlewares/rateLimit.js': [
     '✅ Adiciona logging quando limite é excedido',
     '✅ Separa limiters por tipo (auth, api, read, write)',
@@ -63,7 +63,7 @@ export const MODIFIED_FILES = {
     '✅ Exporta função createWriteLimiter',
     '✅ Skippa teste environment'
   ],
-  
+
   'src/docs/swagger.js': [
     '✅ Documentação completa de todos os endpoints',
     '✅ Exemplos de request/response',

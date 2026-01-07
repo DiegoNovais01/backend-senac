@@ -10,12 +10,12 @@ export const validateRequestBody = (req, res, next) => {
     logger.warn(`Body vazio em ${req.method} ${req.path}`);
     return ApiResponse.badRequest(res, 'Corpo da requisição não pode estar vazio');
   }
-  
+
   if (typeof req.body !== 'object' || Array.isArray(req.body)) {
     logger.warn(`Body inválido em ${req.method} ${req.path}`);
     return ApiResponse.badRequest(res, 'Corpo da requisição deve ser um objeto JSON válido');
   }
-  
+
   next();
 };
 
@@ -24,18 +24,18 @@ export const validateRequestBody = (req, res, next) => {
  */
 export const validateIdParam = (req, res, next) => {
   const { id } = req.params;
-  
+
   if (!id) {
     logger.warn(`ID faltando em ${req.method} ${req.path}`);
     return ApiResponse.badRequest(res, 'ID é obrigatório');
   }
-  
+
   const parsedId = parseInt(id);
   if (isNaN(parsedId) || parsedId <= 0) {
     logger.warn(`ID inválido em ${req.method} ${req.path}: ${id}`);
     return ApiResponse.badRequest(res, 'ID inválido - deve ser um número inteiro positivo');
   }
-  
+
   // Armazenar ID validado na requisição para usar no controller
   req.validatedId = parsedId;
   next();
@@ -54,11 +54,11 @@ export const sanitizeInputs = (req, res, next) => {
       }
     }
   };
-  
+
   if (req.body) {
     sanitize(req.body);
   }
-  
+
   next();
 };
 
@@ -76,15 +76,15 @@ export const parseBooleanValues = (req, res, next) => {
       }
     }
   };
-  
+
   if (req.body) {
     parseBoolean(req.body);
   }
-  
+
   if (req.query) {
     parseBoolean(req.query);
   }
-  
+
   next();
 };
 
@@ -115,8 +115,8 @@ export const removeSensitiveFields = (fields = []) => {
   return (req, res, next) => {
     // Interceptar a resposta
     const originalJson = res.json;
-    
-    res.json = function(data) {
+
+    res.json = function (data) {
       if (data && typeof data === 'object') {
         const removeFields = (obj) => {
           if (Array.isArray(obj)) {
@@ -133,13 +133,13 @@ export const removeSensitiveFields = (fields = []) => {
             });
           }
         };
-        
+
         removeFields(data);
       }
-      
+
       return originalJson.call(this, data);
     };
-    
+
     next();
   };
 };
@@ -151,10 +151,10 @@ export const limitPayloadSize = (maxSize = '1mb') => {
   // O express.json() já faz isso, mas pode ser configurado aqui também
   return (req, res, next) => {
     const size = JSON.stringify(req.body).length;
-    const maxBytes = maxSize.toLowerCase().includes('kb') 
-      ? parseInt(maxSize) * 1024 
+    const maxBytes = maxSize.toLowerCase().includes('kb')
+      ? parseInt(maxSize) * 1024
       : parseInt(maxSize) * 1024 * 1024;
-    
+
     if (size > maxBytes) {
       logger.warn(`Payload muito grande: ${size} bytes no ${req.method} ${req.path}`);
       return res.status(413).json({
@@ -162,7 +162,7 @@ export const limitPayloadSize = (maxSize = '1mb') => {
         error: `Payload é muito grande. Máximo permitido: ${maxSize}`
       });
     }
-    
+
     next();
   };
 };
@@ -173,14 +173,14 @@ export const limitPayloadSize = (maxSize = '1mb') => {
 export const composeValidators = (...validators) => {
   return (req, res, next) => {
     let index = 0;
-    
+
     const executeNext = (err) => {
       if (err) return next(err);
       if (index >= validators.length) return next();
-      
+
       validators[index++](req, res, executeNext);
     };
-    
+
     executeNext();
   };
 };

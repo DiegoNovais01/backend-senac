@@ -17,7 +17,7 @@ import swaggerUi from 'swagger-ui-express';
 import swaggerSpec from './docs/swagger.js';
 import { errorHandler } from "./middlewares/errorHandle.js";
 import { requestLogger } from "./middlewares/requestLogger.js";
-import { createApiLimiter, createReadLimiter, createWriteLimiter } from "./middlewares/rateLimit.js";
+import { createApiLimiter, readLimiter as defaultReadLimiter, writeLimiter as defaultWriteLimiter } from "./middlewares/rateLimit.js";
 import { sanitizeInputs, parseBooleanValues, validateRequestBody } from "./middlewares/validation.js";
 import { securityHeaders, hideServer, requestId, enforceJsonContentType, sanitizeHeaders } from "./middlewares/security.js";
 
@@ -62,8 +62,9 @@ app.use(parseBooleanValues);
 // RATE LIMITING - Proteger contra abuso
 // ═══════════════════════════════════════════════════════════════════════════
 const apiLimiter = createApiLimiter({ windowMs: 15 * 60 * 1000, max: 250 });
-const readLimiter = createReadLimiter({ windowMs: 15 * 60 * 1000, max: 300 });
-const writeLimiter = createWriteLimiter({ windowMs: 15 * 60 * 1000, max: 50 });
+// Usar os limiters padrão (já configurados) para leitura/escrita
+const readLimiter = defaultReadLimiter;
+const writeLimiter = defaultWriteLimiter;
 
 // Aplicar limiter global (geral para toda API)
 app.use("/alunos", apiLimiter);
@@ -76,13 +77,21 @@ app.use("/avaliacoes", apiLimiter);
 // ═══════════════════════════════════════════════════════════════════════════
 // ROTAS
 // ═══════════════════════════════════════════════════════════════════════════
-app.use("/alunos", alunoRoutes);
-app.use("/cursos", cursoRoutes);
-app.use("/matriculas", matriculaRoutes);
-app.use("/auth", authRoutes);
-app.use("/instrutores", instrutorRoutes);
-app.use("/categorias", categoriaRoutes);
-app.use("/avaliacoes", avaliacaoRoutes);
+// Aplicar limiters específicos por método (read / write) e depois montar as rotas
+const applyMethodLimiters = (readLimiterFn, writeLimiterFn) => {
+  return [
+    (req, res, next) => (req.method === 'GET' ? readLimiterFn(req, res, next) : next()),
+    (req, res, next) => (['POST', 'PUT', 'PATCH', 'DELETE'].includes(req.method) ? writeLimiterFn(req, res, next) : next())
+  ];
+};
+
+app.use("/alunos", applyMethodLimiters(readLimiter, writeLimiter), alunoRoutes);
+app.use("/cursos", applyMethodLimiters(readLimiter, writeLimiter), cursoRoutes);
+app.use("/matriculas", applyMethodLimiters(readLimiter, writeLimiter), matriculaRoutes);
+app.use("/auth", applyMethodLimiters(readLimiter, writeLimiter), authRoutes);
+app.use("/instrutores", applyMethodLimiters(readLimiter, writeLimiter), instrutorRoutes);
+app.use("/categorias", applyMethodLimiters(readLimiter, writeLimiter), categoriaRoutes);
+app.use("/avaliacoes", applyMethodLimiters(readLimiter, writeLimiter), avaliacaoRoutes);
 
 // ═══════════════════════════════════════════════════════════════════════════
 // DOCUMENTAÇÃO
@@ -122,11 +131,17 @@ app.use(errorHandler);
 // ═══════════════════════════════════════════════════════════════════════════
 const PORT = process.env.PORT || 3000;
 
-app.listen(PORT, () => {
-  logger.info(`🚀 Servidor rodando na porta ${PORT}`);
-  logger.info(`📄 Documentação: http://localhost:${PORT}/api/docs`);
-  logger.info(`❤️  Health check: http://localhost:${PORT}/health`);
-});
+// Inicia o servidor somente se não estivermos em ambiente de teste.
+if (process.env.NODE_ENV !== 'test') {
+  app.listen(PORT, () => {
+    logger.info(`🚀 Servidor rodando na porta ${PORT}`);
+    logger.info(`📄 Documentação: http://localhost:${PORT}/api/docs`);
+    logger.info(`❤️  Health check: http://localhost:${PORT}/health`);
+  });
+}
+
+// Exportar o app para permitir testes e reutilização sem iniciar o servidor
+export default app;
 
 // ═══════════════════════════════════════════════════════════════════════════
 // TRATAMENTO DE ENCERRAMENTO GRACIOSOS
@@ -152,7 +167,7 @@ process.on("SIGTERM", async () => {
   try {
     await cleanupRefreshTokens();
     logger.info("✅ Limpeza de refresh tokens executada na inicialização");
-    
+
     // Executa a cada 6 horas
     setInterval(async () => {
       try {
@@ -161,7 +176,7 @@ process.on("SIGTERM", async () => {
         logger.error("❌ Erro ao limpar refresh tokens:", { error: err.message });
       }
     }, 6 * 60 * 60 * 1000);
-    
+
     logger.info("⏰ Job de limpeza de tokens agendado para executar a cada 6 horas");
   } catch (err) {
     logger.error("❌ Erro ao iniciar cleanupRefreshTokens:", { error: err.message });

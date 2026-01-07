@@ -243,11 +243,11 @@ export const HTTP_CODES_GUIDE = {
   201: "Created - Recurso criado com sucesso",
   202: "Accepted - Requisição aceita mas ainda processando",
   204: "No Content - Sucesso mas sem conteúdo (DELETE, UPDATE sem retorno)",
-  
+
   // 3xx - Redirecionamento
   301: "Moved Permanently - URL mudou permanentemente",
   304: "Not Modified - Recurso não foi modificado",
-  
+
   // 4xx - Erro do Cliente
   400: "Bad Request - Requisição mal formatada ou parâmetros inválidos",
   401: "Unauthorized - Autenticação necessária ou inválida",
@@ -257,7 +257,7 @@ export const HTTP_CODES_GUIDE = {
   410: "Gone - Recurso foi deletado permanentemente",
   422: "Unprocessable Entity - Validação falhou (Zod errors)",
   429: "Too Many Requests - Rate limit excedido",
-  
+
   // 5xx - Erro do Servidor
   500: "Internal Server Error - Erro geral não esperado",
   501: "Not Implemented - Funcionalidade não implementada",

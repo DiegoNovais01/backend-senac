@@ -5,9 +5,9 @@ import { logger } from '../utils/logger.js';
 export const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutos
   max: 10, // 10 tentativas
-  message: { 
+  message: {
     success: false,
-    error: "Muitas tentativas de autenticação. Tente novamente em 15 minutos." 
+    error: "Muitas tentativas de autenticação. Tente novamente em 15 minutos."
   },
   standardHeaders: true,
   legacyHeaders: false,
@@ -17,9 +17,9 @@ export const authLimiter = rateLimit({
   },
   handler: (req, res) => {
     logger.warn(`Rate limit excedido para autenticação do IP: ${req.ip}`);
-    res.status(429).json({ 
+    res.status(429).json({
       success: false,
-      error: "Muitas tentativas. Tente novamente mais tarde." 
+      error: "Muitas tentativas. Tente novamente mais tarde."
     });
   }
 });
@@ -28,18 +28,18 @@ export const authLimiter = rateLimit({
 export const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutos
   max: 100, // 100 requisições
-  message: { 
+  message: {
     success: false,
-    error: "Muitas requisições foram feitas. Tente novamente mais tarde." 
+    error: "Muitas requisições foram feitas. Tente novamente mais tarde."
   },
   standardHeaders: true,
   legacyHeaders: false,
   skip: (req, res) => process.env.NODE_ENV === 'test',
   handler: (req, res) => {
     logger.warn(`Rate limit excedido para IP: ${req.ip} na rota ${req.path}`);
-    res.status(429).json({ 
+    res.status(429).json({
       success: false,
-      error: "Limite de requisições excedido." 
+      error: "Limite de requisições excedido."
     });
   }
 });
@@ -49,18 +49,18 @@ export const createApiLimiter = (options = {}) => {
   return rateLimit({
     windowMs: options.windowMs ?? 15 * 60 * 1000,
     max: options.max ?? 100,
-    message: { 
+    message: {
       success: false,
-      error: options.message ?? "Muitas requisições foram feitas. Tente novamente mais tarde." 
+      error: options.message ?? "Muitas requisições foram feitas. Tente novamente mais tarde."
     },
     standardHeaders: true,
     legacyHeaders: false,
     skip: (req, res) => process.env.NODE_ENV === 'test',
     handler: (req, res) => {
       logger.warn(`Rate limit ${options.name ?? 'customizado'} excedido para IP: ${req.ip}`);
-      res.status(429).json({ 
+      res.status(429).json({
         success: false,
-        error: options.message ?? "Limite de requisições excedido." 
+        error: options.message ?? "Limite de requisições excedido."
       });
     }
   });

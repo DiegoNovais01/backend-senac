@@ -8,12 +8,12 @@ const ERROR_MESSAGES = {
   INVALID_EMAIL: 'Email inválido',
   INVALID_DATE: 'Data inválida. Use o formato YYYY-MM-DD',
   INVALID_DATA: 'Dados fornecidos inválidos',
-  
+
   // Duplicação
   CPF_DUPLICATED: 'CPF já cadastrado em outro registro',
   EMAIL_DUPLICATED: 'Email já cadastrado',
   DUPLICATE_FIELD: 'Este valor já existe no banco de dados',
-  
+
   // Não encontrado
   NOT_FOUND: 'Recurso não encontrado',
   ALUNO_NOT_FOUND: 'Aluno não encontrado',
@@ -23,14 +23,14 @@ const ERROR_MESSAGES = {
   AVALIACAO_NOT_FOUND: 'Avaliação não encontrada',
   CATEGORIA_NOT_FOUND: 'Categoria não encontrada',
   USUARIO_NOT_FOUND: 'Usuário não encontrado',
-  
+
   // Operações específicas
   MATRICULA_NOT_IN_COURSE: 'Aluno não está matriculado neste curso',
   CATEGORIA_WITH_COURSES: 'Não é possível deletar categoria com cursos associados',
   INVALID_CREDENTIALS: 'Credenciais inválidas',
   UNAUTHORIZED: 'Não autorizado. Token inválido ou expirado',
   FORBIDDEN: 'Acesso negado. Você não tem permissão para esta ação',
-  
+
   // Servidor
   DATABASE_ERROR: 'Erro na operação com banco de dados',
   SERVER_ERROR: 'Erro interno do servidor',
@@ -47,11 +47,11 @@ export const ApiResponse = {
       data
     });
   },
-  
+
   created: (res, data, message = 'Recurso criado com sucesso') => {
     return ApiResponse.success(res, data, 201, message);
   },
-  
+
   // Erros de validação
   badRequest: (res, message = ERROR_MESSAGES.INVALID_DATA, details = null) => {
     logger.warn(`Bad Request: ${message}`, details);
@@ -61,7 +61,7 @@ export const ApiResponse = {
       ...(details && { details })
     });
   },
-  
+
   // Não encontrado
   notFound: (res, message = ERROR_MESSAGES.NOT_FOUND) => {
     logger.warn(`Not Found: ${message}`);
@@ -70,7 +70,7 @@ export const ApiResponse = {
       error: message
     });
   },
-  
+
   // Não autorizado
   unauthorized: (res, message = ERROR_MESSAGES.UNAUTHORIZED) => {
     logger.warn(`Unauthorized: ${message}`);
@@ -79,7 +79,7 @@ export const ApiResponse = {
       error: message
     });
   },
-  
+
   // Acesso negado
   forbidden: (res, message = ERROR_MESSAGES.FORBIDDEN) => {
     logger.warn(`Forbidden: ${message}`);
@@ -88,7 +88,7 @@ export const ApiResponse = {
       error: message
     });
   },
-  
+
   // Erro genérico do servidor
   serverError: (res, message = ERROR_MESSAGES.SERVER_ERROR, error = null) => {
     logger.error(`Server Error: ${message}`, error);
@@ -98,7 +98,7 @@ export const ApiResponse = {
       ...(process.env.NODE_ENV === 'development' && error && { details: error.message })
     });
   },
-  
+
   // Erro de validação específico
   validationError: (res, message = ERROR_MESSAGES.VALIDATION_ERROR, details = null) => {
     logger.warn(`Validation Error: ${message}`, details);
@@ -108,11 +108,11 @@ export const ApiResponse = {
       ...(details && { details })
     });
   },
-  
+
   // Erro de banco de dados
   dbError: (res, error, operation = 'operação no banco de dados') => {
     logger.logDbError(operation, error);
-    
+
     // Mensagens específicas por código de erro Prisma
     const errorMap = {
       'P2002': `${error.meta?.target?.[0] || 'Campo'} já está em uso`,
@@ -120,9 +120,9 @@ export const ApiResponse = {
       'P2003': 'Referência inválida - registro relacionado não existe',
       'P2014': 'Operação falhou - há registros relacionados que precisam ser removidos primeiro'
     };
-    
+
     const message = errorMap[error.code] || ERROR_MESSAGES.DATABASE_ERROR;
-    
+
     return res.status(400).json({
       success: false,
       error: message,
