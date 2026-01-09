@@ -1,5 +1,8 @@
 import prisma from "../db.js";
 import { getPagination, formatMeta } from "../utils/pagination.js";
+import { ApiResponse } from "../utils/apiResponse.js";
+import { logger } from "../utils/logger.js";
+import { validateId, validateDate } from "../utils/validators.js";
 
 // 🔹 Listar matrículas
 export const listarMatriculas = async (req, res) => {
@@ -15,26 +18,32 @@ export const listarMatriculas = async (req, res) => {
       prisma.matriculas.count(),
     ]);
 
-    res.json({ data: matriculas, meta: formatMeta(page, limit, total) });
+    return ApiResponse.success(res, { data: matriculas, meta: formatMeta(page, limit, total) }, "Matrículas listadas com sucesso");
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Erro ao buscar matrículas." });
+    logger.error("Erro ao buscar matrículas", { error: err.message });
+    return ApiResponse.serverError(res, "Erro ao buscar matrículas");
   }
 };
 
 // 🔹 Buscar matrícula por ID
 export const buscarMatriculaPorId = async (req, res) => {
   try {
-    const id = parseInt(req.params.id);
+    const idValidation = validateId(req.params.id);
+    if (!idValidation.valid) {
+      return ApiResponse.badRequest(res, idValidation.error);
+    }
+
     const matricula = await prisma.matriculas.findUnique({
-      where: { id_matricula: id },
+      where: { id_matricula: idValidation.data },
       include: { alunos: true, cursos: true },
     });
-    if (!matricula) return res.status(404).json({ error: 'Matrícula não encontrada' });
-    res.json(matricula);
+    if (!matricula) {
+      return ApiResponse.notFound(res, "Matrícula não encontrada");
+    }
+    return ApiResponse.success(res, matricula);
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Erro ao buscar matrícula.' });
+    logger.error("Erro ao buscar matrícula por ID", { id: req.params.id, error: err.message });
+    return ApiResponse.serverError(res, "Erro ao buscar matrícula");
   }
 };
 
@@ -42,87 +51,117 @@ export const buscarMatriculaPorId = async (req, res) => {
 export const criarMatricula = async (req, res) => {
   try {
     const { id_aluno, id_curso, data_matricula } = req.body;
+
+    const alunoValidation = validateId(id_aluno);
+    const cursoValidation = validateId(id_curso);
+
+    if (!alunoValidation.valid) {
+      return ApiResponse.badRequest(res, "id_aluno inválido");
+    }
+    if (!cursoValidation.valid) {
+      return ApiResponse.badRequest(res, "id_curso inválido");
+    }
+
     let dataMatricula = data_matricula ? new Date(data_matricula) : new Date();
 
     if (isNaN(dataMatricula.getTime())) {
-      return res.status(400).json({ error: "data_matricula inválida" });
+      return ApiResponse.badRequest(res, "data_matricula inválida");
     }
 
     const matricula = await prisma.matriculas.create({
       data: {
-        id_aluno: parseInt(id_aluno),
-        id_curso: parseInt(id_curso),
+        id_aluno: alunoValidation.data,
+        id_curso: cursoValidation.data,
         status: "ativa",
         data_matricula: dataMatricula,
       },
     });
 
-    res.status(200).json({
-      message: "Matricula criada com sucesso!",
-      data: matricula
-    });
+    logger.info("Matrícula criada com sucesso", { id_matricula: matricula.id_matricula, id_aluno: alunoValidation.data });
+    return ApiResponse.created(res, matricula, "Matrícula criada com sucesso");
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Erro ao criar matrícula." });
+    logger.error("Erro ao criar matrícula", { error: err.message, body: req.body });
+    return ApiResponse.serverError(res, "Erro ao criar matrícula");
   }
 };
 
 // 🔹 Atualizar matrícula
 export const atualizarMatricula = async (req, res) => {
   try {
-    const { id } = req.params;
+    const idValidation = validateId(req.params.id);
+    if (!idValidation.valid) {
+      return ApiResponse.badRequest(res, idValidation.error);
+    }
+
     const { id_aluno, id_curso, data_matricula, status, nota_final } = req.body;
 
     const dataAtualizada = {};
 
-    if (id_aluno !== undefined) dataAtualizada.id_aluno = parseInt(id_aluno);
-    if (id_curso !== undefined) dataAtualizada.id_curso = parseInt(id_curso);
-    if (status !== undefined) dataAtualizada.status = status;
-    if (nota_final !== undefined) dataAtualizada.nota_final = parseFloat(nota_final);
+    if (id_aluno !== undefined) {
+      const alunoValidation = validateId(id_aluno);
+      if (!alunoValidation.valid) {
+        return ApiResponse.badRequest(res, "id_aluno inválido");
+      }
+      dataAtualizada.id_aluno = alunoValidation.data;
+    }
+
+    if (id_curso !== undefined) {
+      const cursoValidation = validateId(id_curso);
+      if (!cursoValidation.valid) {
+        return ApiResponse.badRequest(res, "id_curso inválido");
+      }
+      dataAtualizada.id_curso = cursoValidation.data;
+    }
+
+    if (status !== undefined) {
+      dataAtualizada.status = status;
+    }
+    if (nota_final !== undefined) {
+      dataAtualizada.nota_final = parseFloat(nota_final);
+    }
     if (data_matricula !== undefined) {
       const d = new Date(data_matricula);
-      if (isNaN(d.getTime())) return res.status(400).json({ error: "data_matricula inválida" });
+      if (isNaN(d.getTime())) {
+        return ApiResponse.badRequest(res, "data_matricula inválida");
+      }
       dataAtualizada.data_matricula = d;
     }
 
     const matriculaAtualizada = await prisma.matriculas.update({
-      where: { id_matricula: parseInt(id) },
+      where: { id_matricula: idValidation.data },
       data: dataAtualizada,
     });
 
-    res.json({
-      message: "Matricula atualizada com sucesso!",
-      data: matriculaAtualizada
-    });
+    logger.info("Matrícula atualizada com sucesso", { id_matricula: idValidation.data });
+    return ApiResponse.success(res, matriculaAtualizada, "Matrícula atualizada com sucesso");
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Erro ao atualizar matrícula." });
+    logger.error("Erro ao atualizar matrícula", { id: req.params.id, error: err.message });
+    return ApiResponse.serverError(res, "Erro ao atualizar matrícula");
   }
 };
 
 // 🔹 Excluir matrícula
 export const deletarMatricula = async (req, res) => {
   try {
-    const id_matricula = parseInt(req.params.id);
-
-    // Validar ID
-    if (isNaN(id_matricula)) {
-      return res.status(400).json({ error: "ID inválido - deve ser um número" });
+    const idValidation = validateId(req.params.id);
+    if (!idValidation.valid) {
+      return ApiResponse.badRequest(res, idValidation.error);
     }
 
     // Verificar se matrícula existe
     const matriculaExiste = await prisma.matriculas.findUnique({
-      where: { id_matricula }
+      where: { id_matricula: idValidation.data }
     });
 
     if (!matriculaExiste) {
-      return res.status(404).json({ error: "Matrícula não encontrada" });
+      return ApiResponse.notFound(res, "Matrícula não encontrada");
     }
 
-    await prisma.matriculas.delete({ where: { id_matricula } });
-    res.json({ message: "Matrícula excluída com sucesso!" });
+    await prisma.matriculas.delete({ where: { id_matricula: idValidation.data } });
+    logger.info("Matrícula deletada com sucesso", { id_matricula: idValidation.data });
+    return ApiResponse.success(res, null, "Matrícula excluída com sucesso");
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Erro ao excluir matrícula." });
+    logger.error("Erro ao excluir matrícula", { id: req.params.id, error: err.message });
+    return ApiResponse.serverError(res, "Erro ao excluir matrícula");
   }
 };

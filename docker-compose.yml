@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  db:
+    image: mysql:8.0
+    container_name: senac_mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: senac_password
+      MYSQL_DATABASE: senac_db
+      MYSQL_USER: senac_user
+      MYSQL_PASSWORD: senac_password
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 5s
+      retries: 10
+
+  app:
+    build: .
+    container_name: senac_backend
+    environment:
+      DATABASE_URL: mysql://senac_user:senac_password@db:3306/senac_db
+      JWT_SECRET: senac_jwt_secret_key_production_123456789
+      NODE_ENV: production
+      PORT: 3000
+    ports:
+      - "3000:3000"
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./src:/app/src
+    command: npm start
+
+volumes:
+  mysql_data:
+    driver: local

@@ -1,5 +1,8 @@
 import prisma from "../db.js";
 import { getPagination, formatMeta } from "../utils/pagination.js";
+import { ApiResponse } from "../utils/apiResponse.js";
+import { logger } from "../utils/logger.js";
+import { validateId, validateString, validateDate, validateFloat } from "../utils/validators.js";
 
 // Funções auxiliares
 const normalizeNivel = (valor) => {
@@ -36,26 +39,31 @@ export const listarCursos = async (req, res) => {
       prisma.cursos.count(),
     ]);
 
-    res.json({ data: cursos, meta: formatMeta(page, limit, total) });
+    return ApiResponse.success(res, { data: cursos, meta: formatMeta(page, limit, total) }, "Cursos listados com sucesso");
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Erro ao listar cursos." });
+    logger.error("Erro ao listar cursos", { error: err.message, stack: err.stack });
+    return ApiResponse.serverError(res, "Erro ao listar cursos");
   }
 };
 
 // 🔹 Buscar curso por ID
 export const buscarCursoPorId = async (req, res) => {
   try {
+    const idValidation = validateId(req.params.id);
+    if (!idValidation.valid) {
+      return ApiResponse.badRequest(res, idValidation.error);
+    }
+
     const curso = await prisma.cursos.findUnique({
-      where: { id_curso: parseInt(req.params.id) },
+      where: { id_curso: idValidation.data },
     });
     if (!curso) {
-      return res.status(404).json({ error: "Curso não encontrado" });
+      return ApiResponse.notFound(res, "Curso não encontrado");
     }
-    res.json(curso);
+    return ApiResponse.success(res, curso);
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Erro ao buscar curso." });
+    logger.error("Erro ao buscar curso por ID", { id: req.params.id, error: err.message });
+    return ApiResponse.serverError(res, "Erro ao buscar curso");
   }
 };
 
@@ -66,19 +74,25 @@ export const criarCurso = async (req, res) => {
 
     if (data.data_inicio) {
       const d = new Date(data.data_inicio);
-      if (isNaN(d.getTime())) return res.status(400).json({ error: "data_inicio inválida." });
+      if (isNaN(d.getTime())) {
+        return ApiResponse.badRequest(res, "data_inicio inválida");
+      }
       data.data_inicio = d;
     }
 
     if (data.carga_horaria !== undefined) {
       const ch = parseInt(data.carga_horaria, 10);
-      if (isNaN(ch)) return res.status(400).json({ error: "carga_horaria inválida." });
+      if (isNaN(ch)) {
+        return ApiResponse.badRequest(res, "carga_horaria inválida");
+      }
       data.carga_horaria = ch;
     }
 
     if (data.preco !== undefined && data.preco !== null && data.preco !== "") {
       const p = parseFloat(data.preco);
-      if (isNaN(p)) return res.status(400).json({ error: "preco inválido." });
+      if (isNaN(p)) {
+        return ApiResponse.badRequest(res, "preco inválido");
+      }
       data.preco = p;
     }
 
@@ -86,37 +100,45 @@ export const criarCurso = async (req, res) => {
     data.modalidade = normalizeModalidade(data.modalidade);
 
     const novo = await prisma.cursos.create({ data });
-    res.status(201).json({
-      message: "Curso adicionado com sucesso!",
-      novo: novo
-    });
+    logger.info("Curso criado com sucesso", { id_curso: novo.id_curso, nome: novo.nome });
+    return ApiResponse.created(res, novo, "Curso criado com sucesso");
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Erro ao criar curso." });
+    logger.error("Erro ao criar curso", { error: err.message, body: req.body });
+    return ApiResponse.serverError(res, "Erro ao criar curso");
   }
 };
 
 // 🔹 Atualizar curso
 export const atualizarCurso = async (req, res) => {
   try {
-    const { id } = req.params;
+    const idValidation = validateId(req.params.id);
+    if (!idValidation.valid) {
+      return ApiResponse.badRequest(res, idValidation.error);
+    }
+
     const data = { ...req.body };
 
     if (data.data_inicio) {
       const d = new Date(data.data_inicio);
-      if (isNaN(d.getTime())) return res.status(400).json({ error: "data_inicio inválida." });
+      if (isNaN(d.getTime())) {
+        return ApiResponse.badRequest(res, "data_inicio inválida");
+      }
       data.data_inicio = d;
     }
 
     if (data.carga_horaria !== undefined) {
       const ch = parseInt(data.carga_horaria, 10);
-      if (isNaN(ch)) return res.status(400).json({ error: "carga_horaria inválida." });
+      if (isNaN(ch)) {
+        return ApiResponse.badRequest(res, "carga_horaria inválida");
+      }
       data.carga_horaria = ch;
     }
 
     if (data.preco !== undefined && data.preco !== null && data.preco !== "") {
       const p = parseFloat(data.preco);
-      if (isNaN(p)) return res.status(400).json({ error: "preco inválido." });
+      if (isNaN(p)) {
+        return ApiResponse.badRequest(res, "preco inválido");
+      }
       data.preco = p;
     }
 
@@ -124,36 +146,39 @@ export const atualizarCurso = async (req, res) => {
     data.modalidade = normalizeModalidade(data.modalidade);
 
     const atualizado = await prisma.cursos.update({
-      where: { id_curso: parseInt(id) },
+      where: { id_curso: idValidation.data },
       data,
     });
 
-    res.json({
-      message: "Curso atualizado com sucesso!",
-      atualizarCurso: atualizado
-    });
+    logger.info("Curso atualizado com sucesso", { id_curso: atualizado.id_curso });
+    return ApiResponse.success(res, atualizado, "Curso atualizado com sucesso");
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Erro ao atualizar curso." });
+    logger.error("Erro ao atualizar curso", { id: req.params.id, error: err.message });
+    return ApiResponse.serverError(res, "Erro ao atualizar curso");
   }
 };
 
 // 🔹 Excluir curso
 export const deletarCurso = async (req, res) => {
   try {
-    const { id } = req.params;
+    const idValidation = validateId(req.params.id);
+    if (!idValidation.valid) {
+      return ApiResponse.badRequest(res, idValidation.error);
+    }
+
     const cursoExiste = await prisma.cursos.findUnique({
-      where: { id_curso: parseInt(id) },
+      where: { id_curso: idValidation.data },
     });
 
     if (!cursoExiste) {
-      return res.status(404).json({ error: "Curso não encontrado" });
+      return ApiResponse.notFound(res, "Curso não encontrado");
     }
 
-    await prisma.cursos.delete({ where: { id_curso: parseInt(id) } });
-    res.json({ message: "Curso excluído com sucesso!" });
+    await prisma.cursos.delete({ where: { id_curso: idValidation.data } });
+    logger.info("Curso deletado com sucesso", { id_curso: idValidation.data });
+    return ApiResponse.success(res, null, "Curso excluído com sucesso");
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Erro ao excluir curso." });
+    logger.error("Erro ao excluir curso", { id: req.params.id, error: err.message });
+    return ApiResponse.serverError(res, "Erro ao excluir curso");
   }
 };
