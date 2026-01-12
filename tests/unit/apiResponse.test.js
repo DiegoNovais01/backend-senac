@@ -13,7 +13,7 @@ describe('ApiResponse Utils', () => {
   describe('success', () => {
     test('deve retornar resposta com status 200', () => {
       ApiResponse.success(res, { id: 1 }, 'Sucesso');
-      
+
       expect(res.status).toHaveBeenCalledWith(200);
       expect(res.json).toHaveBeenCalled();
       const call = res.json.mock.calls[0][0];
@@ -25,7 +25,7 @@ describe('ApiResponse Utils', () => {
   describe('created', () => {
     test('deve retornar resposta com status 201', () => {
       ApiResponse.created(res, { id: 1 }, 'Criado');
-      
+
       expect(res.status).toHaveBeenCalledWith(201);
       expect(res.json).toHaveBeenCalled();
       const call = res.json.mock.calls[0][0];
@@ -36,7 +36,7 @@ describe('ApiResponse Utils', () => {
   describe('badRequest', () => {
     test('deve retornar resposta com status 400', () => {
       ApiResponse.badRequest(res, 'Campo obrigatório');
-      
+
       expect(res.status).toHaveBeenCalledWith(400);
       const call = res.json.mock.calls[0][0];
       expect(call.status).toBe('error');
@@ -46,7 +46,7 @@ describe('ApiResponse Utils', () => {
   describe('unauthorized', () => {
     test('deve retornar resposta com status 401', () => {
       ApiResponse.unauthorized(res, 'Não autenticado');
-      
+
       expect(res.status).toHaveBeenCalledWith(401);
       const call = res.json.mock.calls[0][0];
       expect(call.status).toBe('error');
@@ -56,7 +56,7 @@ describe('ApiResponse Utils', () => {
   describe('notFound', () => {
     test('deve retornar resposta com status 404', () => {
       ApiResponse.notFound(res, 'Recurso não encontrado');
-      
+
       expect(res.status).toHaveBeenCalledWith(404);
       const call = res.json.mock.calls[0][0];
       expect(call.status).toBe('error');
@@ -66,7 +66,7 @@ describe('ApiResponse Utils', () => {
   describe('serverError', () => {
     test('deve retornar resposta com status 500', () => {
       ApiResponse.serverError(res, 'Erro interno');
-      
+
       expect(res.status).toHaveBeenCalledWith(500);
       const call = res.json.mock.calls[0][0];
       expect(call.status).toBe('error');
