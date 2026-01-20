@@ -2,7 +2,7 @@ import prisma from "../db.js";
 import { getPagination, formatMeta } from "../utils/pagination.js";
 import { ApiResponse } from "../utils/apiResponse.js";
 import { logger } from "../utils/logger.js";
-import { validateId, validateString, validateDate, validateFloat } from "../utils/validators.js";
+import { validateId, validateString, validateDate } from "../utils/validators.js";
 
 // Funções auxiliares
 const normalizeNivel = (valor) => {

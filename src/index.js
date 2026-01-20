@@ -23,7 +23,6 @@ import { securityHeaders, hideServer, requestId, enforceJsonContentType, sanitiz
 
 // Importar jobs e utilitários
 import cleanupRefreshTokens from './jobs/cleanupRefreshTokens.js';
-import { logger } from "./utils/logger.js";
 
 dotenv.config();
 const app = express();
@@ -134,9 +133,9 @@ const PORT = process.env.PORT || 3000;
 // Inicia o servidor somente se não estivermos em ambiente de teste.
 if (process.env.NODE_ENV !== 'test') {
   app.listen(PORT, () => {
-    logger.info(`🚀 Servidor rodando na porta ${PORT}`);
-    logger.info(`📄 Documentação: http://localhost:${PORT}/api/docs`);
-    logger.info(`❤️  Health check: http://localhost:${PORT}/health`);
+    console.log(`🚀 Servidor rodando na porta ${PORT}`);
+    console.log(`📄 Documentação: http://localhost:${PORT}/api/docs`);
+    console.log(`❤️  Health check: http://localhost:${PORT}/health`);
   });
 }
 
@@ -147,16 +146,16 @@ export default app;
 // TRATAMENTO DE ENCERRAMENTO GRACIOSOS
 // ═══════════════════════════════════════════════════════════════════════════
 process.on("SIGINT", async () => {
-  logger.info("🛑 Recebido sinal SIGINT - encerrando graciosamente...");
+  console.log("🛑 Recebido sinal SIGINT - encerrando graciosamente...");
   await prisma.$disconnect();
-  logger.info("🧹 Prisma desconectado.");
+  console.log("🧹 Prisma desconectado.");
   process.exit(0);
 });
 
 process.on("SIGTERM", async () => {
-  logger.info("🛑 Recebido sinal SIGTERM - encerrando graciosamente...");
+  console.log("🛑 Recebido sinal SIGTERM - encerrando graciosamente...");
   await prisma.$disconnect();
-  logger.info("🧹 Prisma desconectado.");
+  console.log("🧹 Prisma desconectado.");
   process.exit(0);
 });
 
@@ -164,21 +163,27 @@ process.on("SIGTERM", async () => {
 // JOBS AGENDADOS
 // ═══════════════════════════════════════════════════════════════════════════
 (async () => {
+  // Apenas executar se DATABASE_URL está configurada
+  if (!process.env.DATABASE_URL) {
+    console.warn("⚠️  DATABASE_URL não configurada - jobs de cleanup desativados");
+    return;
+  }
+
   try {
     await cleanupRefreshTokens();
-    logger.info("✅ Limpeza de refresh tokens executada na inicialização");
+    console.log("✅ Limpeza de refresh tokens executada na inicialização");
 
     // Executa a cada 6 horas
     setInterval(async () => {
       try {
         await cleanupRefreshTokens();
       } catch (err) {
-        logger.error("❌ Erro ao limpar refresh tokens:", { error: err.message });
+        console.error("❌ Erro ao limpar refresh tokens:", { error: err.message });
       }
     }, 6 * 60 * 60 * 1000);
 
-    logger.info("⏰ Job de limpeza de tokens agendado para executar a cada 6 horas");
+    console.log("⏰ Job de limpeza de tokens agendado para executar a cada 6 horas");
   } catch (err) {
-    logger.error("❌ Erro ao iniciar cleanupRefreshTokens:", { error: err.message });
+    console.error("❌ Erro ao iniciar cleanupRefreshTokens:", { error: err.message });
   }
 })();

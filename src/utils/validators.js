@@ -55,6 +55,26 @@ export const validators = {
     return { valid: true, value: num };
   },
 
+  // Validar inteiro dentro de um intervalo
+  validateInt: (value, options = {}) => {
+    const { min = null, max = null, fieldName = 'Valor' } = options;
+    const num = parseInt(value, 10);
+
+    if (isNaN(num)) {
+      return { valid: false, error: `${fieldName} deve ser um número inteiro`, data: null };
+    }
+
+    if (min !== null && num < min) {
+      return { valid: false, error: `${fieldName} deve ser no mínimo ${min}`, data: null };
+    }
+
+    if (max !== null && num > max) {
+      return { valid: false, error: `${fieldName} deve ser no máximo ${max}`, data: null };
+    }
+
+    return { valid: true, data: num };
+  },
+
   // Validar string não-vazia
   validateString: (value, fieldName = 'Campo', minLength = 1, maxLength = null) => {
     if (!value || typeof value !== 'string') {
@@ -128,3 +148,15 @@ export const validateBodyNotEmpty = (req, res, next) => {
   }
   next();
 };
+
+// ═══════════════════════════════════════════════════════════════════════════
+// EXPORTS NOMEADAS PARA COMPATIBILIDADE COM IMPORTS DIRETOS
+// ═══════════════════════════════════════════════════════════════════════════
+export const validateId = validators.validateId;
+export const validateEmail = validators.validateEmail;
+export const validateDate = validators.validateDate;
+export const validatePositiveNumber = validators.validatePositiveNumber;
+export const validateInt = validators.validateInt;
+export const validateString = validators.validateString;
+export const validateEnum = validators.validateEnum;
+export const validateObject = validators.validateObject;
