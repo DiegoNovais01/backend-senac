@@ -2,7 +2,7 @@ import prisma from "../db.js";
 import { getPagination, formatMeta } from "../utils/pagination.js";
 import { ApiResponse } from "../utils/apiResponse.js";
 import { logger } from "../utils/logger.js";
-import { validateId, validateString } from "../utils/validators.js";
+import { validators } from "../utils/validators.js";
 
 // 🔹 Listar categorias
 export const listarCategorias = async (req, res) => {
@@ -28,7 +28,7 @@ export const listarCategorias = async (req, res) => {
 // 🔹 Buscar categoria por ID
 export const buscarCategoriaPorId = async (req, res) => {
   try {
-    const idValidation = validateId(req.params.id);
+    const idValidation = validators.validateId(req.params.id);
     if (!idValidation.valid) {
       return ApiResponse.badRequest(res, idValidation.error);
     }
@@ -52,7 +52,7 @@ export const criarCategoria = async (req, res) => {
   try {
     const { nome, descricao } = req.body;
 
-    const nomeValidation = validateString(nome, { min: 3, max: 100 });
+    const nomeValidation = validators.validateString(nome, { min: 3, max: 100 });
     if (!nomeValidation.valid) {
       return ApiResponse.badRequest(res, "Nome deve ter entre 3 e 100 caracteres");
     }
@@ -81,7 +81,7 @@ export const criarCategoria = async (req, res) => {
 // 🔹 Atualizar categoria
 export const atualizarCategoria = async (req, res) => {
   try {
-    const idValidation = validateId(req.params.id);
+    const idValidation = validators.validateId(req.params.id);
     if (!idValidation.valid) {
       return ApiResponse.badRequest(res, idValidation.error);
     }
@@ -112,7 +112,7 @@ export const atualizarCategoria = async (req, res) => {
 // 🔹 Deletar categoria
 export const deletarCategoria = async (req, res) => {
   try {
-    const idValidation = validateId(req.params.id);
+    const idValidation = validators.validateId(req.params.id);
     if (!idValidation.valid) {
       return ApiResponse.badRequest(res, idValidation.error);
     }

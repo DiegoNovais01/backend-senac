@@ -1,5 +1,5 @@
 import { ApiResponse } from '../utils/apiResponse.js';
-import { validateId } from '../utils/validators.js';
+import { validators } from '../utils/validators.js';
 
 /**
  * Middleware centralizado para validação de ID em parâmetros de rota
@@ -14,8 +14,9 @@ export const validateIdParam = (req, res, next) => {
   const id = req.params.id;
 
   // Validar usando o validador centralizado
-  if (!validateId(id)) {
-    return ApiResponse.badRequest(res, 'ID inválido - deve ser um número inteiro positivo');
+  const validation = validators.validateId(id);
+  if (!validation.valid) {
+    return ApiResponse.badRequest(res, validation.error || 'ID inválido - deve ser um número inteiro positivo');
   }
 
   // Se passou na validação, prosseguir

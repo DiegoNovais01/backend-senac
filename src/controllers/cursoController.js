@@ -2,7 +2,7 @@ import prisma from "../db.js";
 import { getPagination, formatMeta } from "../utils/pagination.js";
 import { ApiResponse } from "../utils/apiResponse.js";
 import { logger } from "../utils/logger.js";
-import { validateId, validateString, validateDate, validateFloat } from "../utils/validators.js";
+import { validators } from "../utils/validators.js";
 
 // Funções auxiliares
 const normalizeNivel = (valor) => {
@@ -49,7 +49,7 @@ export const listarCursos = async (req, res) => {
 // 🔹 Buscar curso por ID
 export const buscarCursoPorId = async (req, res) => {
   try {
-    const idValidation = validateId(req.params.id);
+    const idValidation = validators.validateId(req.params.id);
     if (!idValidation.valid) {
       return ApiResponse.badRequest(res, idValidation.error);
     }
@@ -111,7 +111,7 @@ export const criarCurso = async (req, res) => {
 // 🔹 Atualizar curso
 export const atualizarCurso = async (req, res) => {
   try {
-    const idValidation = validateId(req.params.id);
+    const idValidation = validators.validateId(req.params.id);
     if (!idValidation.valid) {
       return ApiResponse.badRequest(res, idValidation.error);
     }
@@ -161,7 +161,7 @@ export const atualizarCurso = async (req, res) => {
 // 🔹 Excluir curso
 export const deletarCurso = async (req, res) => {
   try {
-    const idValidation = validateId(req.params.id);
+    const idValidation = validators.validateId(req.params.id);
     if (!idValidation.valid) {
       return ApiResponse.badRequest(res, idValidation.error);
     }

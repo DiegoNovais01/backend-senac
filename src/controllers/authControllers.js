@@ -4,7 +4,7 @@ import prisma from '../db.js';
 import crypto from 'crypto';
 import { ApiResponse } from '../utils/apiResponse.js';
 import { logger } from '../utils/logger.js';
-import { validateEmail, validateString } from '../utils/validators.js';
+import { validators } from '../utils/validators.js';
 
 const JWT_SECRET = process.env.JWT_SECRET;
 const ACCESS_TOKEN_EXPIRES_IN = process.env.ACCESS_TOKEN_EXPIRES_IN || '15m';
@@ -14,17 +14,17 @@ export const register = async (req, res) => {
   try {
     const { nome, email, senha, papel = 'aluno' } = req.body;
 
-    const emailValidation = validateEmail(email);
+    const emailValidation = validators.validateEmail(email);
     if (!emailValidation.valid) {
       return ApiResponse.badRequest(res, emailValidation.error);
     }
 
-    const nomeValidation = validateString(nome, { min: 3, max: 100 });
+    const nomeValidation = validators.validateString(nome, { min: 3, max: 100 });
     if (!nomeValidation.valid) {
       return ApiResponse.badRequest(res, "Nome deve ter entre 3 e 100 caracteres");
     }
 
-    const senhaValidation = validateString(senha, { min: 8, max: 255 });
+    const senhaValidation = validators.validateString(senha, { min: 8, max: 255 });
     if (!senhaValidation.valid) {
       return ApiResponse.badRequest(res, "Senha deve ter entre 8 e 255 caracteres");
     }
@@ -89,7 +89,7 @@ export const login = async (req, res) => {
   try {
     const { email, senha } = req.body;
 
-    const emailValidation = validateEmail(email);
+    const emailValidation = validators.validateEmail(email);
     if (!emailValidation.valid) {
       return ApiResponse.badRequest(res, emailValidation.error);
     }

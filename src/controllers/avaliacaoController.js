@@ -2,7 +2,7 @@ import prisma from "../db.js";
 import { getPagination, formatMeta } from "../utils/pagination.js";
 import { ApiResponse } from "../utils/apiResponse.js";
 import { logger } from "../utils/logger.js";
-import { validateId, validateInt } from "../utils/validators.js";
+import { validators } from "../utils/validators.js";
 
 // 🔹 Listar avaliações
 export const listarAvaliacoes = async (req, res) => {
@@ -12,14 +12,14 @@ export const listarAvaliacoes = async (req, res) => {
 
     const where = {};
     if (id_curso) {
-      const cursoValidation = validateId(id_curso);
+      const cursoValidation = validators.validateId(id_curso);
       if (!cursoValidation.valid) {
         return ApiResponse.badRequest(res, "id_curso inválido");
       }
       where.id_curso = cursoValidation.data;
     }
     if (id_aluno) {
-      const alunoValidation = validateId(id_aluno);
+      const alunoValidation = validators.validateId(id_aluno);
       if (!alunoValidation.valid) {
         return ApiResponse.badRequest(res, "id_aluno inválido");
       }
@@ -47,7 +47,7 @@ export const listarAvaliacoes = async (req, res) => {
 // 🔹 Buscar avaliação por ID
 export const buscarAvaliacaoPorId = async (req, res) => {
   try {
-    const idValidation = validateId(req.params.id);
+    const idValidation = validators.validateId(req.params.id);
     if (!idValidation.valid) {
       return ApiResponse.badRequest(res, idValidation.error);
     }
@@ -71,9 +71,9 @@ export const criarAvaliacao = async (req, res) => {
   try {
     const { id_curso, id_aluno, nota, comentario } = req.body;
 
-    const cursoValidation = validateId(id_curso);
-    const alunoValidation = validateId(id_aluno);
-    const notaValidation = validateInt(nota, { min: 0, max: 10 });
+    const cursoValidation = validators.validateId(id_curso);
+    const alunoValidation = validators.validateId(id_aluno);
+    const notaValidation = validators.validateInt(nota, { min: 0, max: 10 });
 
     if (!cursoValidation.valid) {
       return ApiResponse.badRequest(res, "id_curso inválido");
@@ -135,7 +135,7 @@ export const criarAvaliacao = async (req, res) => {
 // 🔹 Atualizar avaliação
 export const atualizarAvaliacao = async (req, res) => {
   try {
-    const idValidation = validateId(req.params.id);
+    const idValidation = validators.validateId(req.params.id);
     if (!idValidation.valid) {
       return ApiResponse.badRequest(res, idValidation.error);
     }
@@ -169,7 +169,7 @@ export const atualizarAvaliacao = async (req, res) => {
 // 🔹 Deletar avaliação
 export const deletarAvaliacao = async (req, res) => {
   try {
-    const idValidation = validateId(req.params.id);
+    const idValidation = validators.validateId(req.params.id);
     if (!idValidation.valid) {
       return ApiResponse.badRequest(res, idValidation.error);
     }

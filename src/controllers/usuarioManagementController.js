@@ -3,7 +3,7 @@ import bcrypt from 'bcrypt';
 import crypto from 'crypto';
 import { ApiResponse } from '../utils/apiResponse.js';
 import { logger } from '../utils/logger.js';
-import { validateEmail, validateId, validateString } from '../utils/validators.js';
+import { validators } from '../utils/validators.js';
 
 /**
  * 📋 Listar todos os usuários com tokens ativos (ADMIN ONLY)
@@ -98,7 +98,7 @@ export const solicitarRecuperacaoSenha = async (req, res) => {
   try {
     const { email } = req.body;
 
-    const emailValidation = validateEmail(email);
+    const emailValidation = validators.validateEmail(email);
     if (!emailValidation.valid) {
       return ApiResponse.badRequest(res, emailValidation.error);
     }
@@ -137,12 +137,12 @@ export const resetarSenha = async (req, res) => {
   try {
     const { email, token, nova_senha } = req.body;
 
-    const emailValidation = validateEmail(email);
+    const emailValidation = validators.validateEmail(email);
     if (!emailValidation.valid) {
       return ApiResponse.badRequest(res, emailValidation.error);
     }
 
-    const senhaValidation = validateString(nova_senha, { min: 8 });
+    const senhaValidation = validators.validateString(nova_senha, { min: 8 });
     if (!senhaValidation.valid) {
       return ApiResponse.badRequest(res, "Senha deve ter no mínimo 8 caracteres");
     }
@@ -186,8 +186,8 @@ export const mudarSenha = async (req, res) => {
       return ApiResponse.unauthorized(res, "Usuário não autenticado");
     }
 
-    const senhaAtualValidation = validateString(senha_atual, { min: 8 });
-    const novaSenhaValidation = validateString(nova_senha, { min: 8 });
+    const senhaAtualValidation = validators.validateString(senha_atual, { min: 8 });
+    const novaSenhaValidation = validators.validateString(nova_senha, { min: 8 });
 
     if (!senhaAtualValidation.valid || !novaSenhaValidation.valid) {
       return ApiResponse.badRequest(res, "Senhas devem ter no mínimo 8 caracteres");
@@ -322,7 +322,7 @@ export const logoutDaSessao = async (req, res) => {
       return ApiResponse.badRequest(res, "sessao_id é obrigatório");
     }
 
-    const sessaoIdValidation = validateId(sessao_id);
+    const sessaoIdValidation = validators.validateId(sessao_id);
     if (!sessaoIdValidation.valid) {
       return ApiResponse.badRequest(res, "sessao_id inválido");
     }

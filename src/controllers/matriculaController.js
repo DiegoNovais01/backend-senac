@@ -2,7 +2,7 @@ import prisma from "../db.js";
 import { getPagination, formatMeta } from "../utils/pagination.js";
 import { ApiResponse } from "../utils/apiResponse.js";
 import { logger } from "../utils/logger.js";
-import { validateId, validateDate } from "../utils/validators.js";
+import { validators } from "../utils/validators.js";
 
 // 🔹 Listar matrículas
 export const listarMatriculas = async (req, res) => {
@@ -28,7 +28,7 @@ export const listarMatriculas = async (req, res) => {
 // 🔹 Buscar matrícula por ID
 export const buscarMatriculaPorId = async (req, res) => {
   try {
-    const idValidation = validateId(req.params.id);
+    const idValidation = validators.validateId(req.params.id);
     if (!idValidation.valid) {
       return ApiResponse.badRequest(res, idValidation.error);
     }
@@ -52,8 +52,8 @@ export const criarMatricula = async (req, res) => {
   try {
     const { id_aluno, id_curso, data_matricula } = req.body;
 
-    const alunoValidation = validateId(id_aluno);
-    const cursoValidation = validateId(id_curso);
+    const alunoValidation = validators.validateId(id_aluno);
+    const cursoValidation = validators.validateId(id_curso);
 
     if (!alunoValidation.valid) {
       return ApiResponse.badRequest(res, "id_aluno inválido");
@@ -88,7 +88,7 @@ export const criarMatricula = async (req, res) => {
 // 🔹 Atualizar matrícula
 export const atualizarMatricula = async (req, res) => {
   try {
-    const idValidation = validateId(req.params.id);
+    const idValidation = validators.validateId(req.params.id);
     if (!idValidation.valid) {
       return ApiResponse.badRequest(res, idValidation.error);
     }
@@ -98,7 +98,7 @@ export const atualizarMatricula = async (req, res) => {
     const dataAtualizada = {};
 
     if (id_aluno !== undefined) {
-      const alunoValidation = validateId(id_aluno);
+      const alunoValidation = validators.validateId(id_aluno);
       if (!alunoValidation.valid) {
         return ApiResponse.badRequest(res, "id_aluno inválido");
       }
@@ -106,7 +106,7 @@ export const atualizarMatricula = async (req, res) => {
     }
 
     if (id_curso !== undefined) {
-      const cursoValidation = validateId(id_curso);
+      const cursoValidation = validators.validateId(id_curso);
       if (!cursoValidation.valid) {
         return ApiResponse.badRequest(res, "id_curso inválido");
       }
@@ -143,7 +143,7 @@ export const atualizarMatricula = async (req, res) => {
 // 🔹 Excluir matrícula
 export const deletarMatricula = async (req, res) => {
   try {
-    const idValidation = validateId(req.params.id);
+    const idValidation = validators.validateId(req.params.id);
     if (!idValidation.valid) {
       return ApiResponse.badRequest(res, idValidation.error);
     }

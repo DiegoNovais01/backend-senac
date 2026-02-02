@@ -46,8 +46,10 @@ describe('Logger Utils', () => {
 
   describe('debug', () => {
     test('deve registrar mensagem DEBUG', () => {
+      process.env.DEBUG = 'true';
       logger.debug('Informação de debug');
       expect(consoleSpy).toHaveBeenCalled();
+      delete process.env.DEBUG;
     });
   });
 });

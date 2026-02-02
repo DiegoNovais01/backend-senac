@@ -12,12 +12,12 @@ describe('ApiResponse Utils', () => {
 
   describe('success', () => {
     test('deve retornar resposta com status 200', () => {
-      ApiResponse.success(res, { id: 1 }, 'Sucesso');
+      ApiResponse.success(res, { id: 1 }, 200, 'Sucesso');
 
       expect(res.status).toHaveBeenCalledWith(200);
       expect(res.json).toHaveBeenCalled();
       const call = res.json.mock.calls[0][0];
-      expect(call.status).toBe('success');
+      expect(call.success).toBe(true);
       expect(call.data).toEqual({ id: 1 });
     });
   });
@@ -29,7 +29,7 @@ describe('ApiResponse Utils', () => {
       expect(res.status).toHaveBeenCalledWith(201);
       expect(res.json).toHaveBeenCalled();
       const call = res.json.mock.calls[0][0];
-      expect(call.status).toBe('success');
+      expect(call.success).toBe(true);
     });
   });
 
@@ -39,7 +39,8 @@ describe('ApiResponse Utils', () => {
 
       expect(res.status).toHaveBeenCalledWith(400);
       const call = res.json.mock.calls[0][0];
-      expect(call.status).toBe('error');
+      expect(call.success).toBe(false);
+      expect(call.error).toBe('Campo obrigatório');
     });
   });
 
@@ -49,7 +50,8 @@ describe('ApiResponse Utils', () => {
 
       expect(res.status).toHaveBeenCalledWith(401);
       const call = res.json.mock.calls[0][0];
-      expect(call.status).toBe('error');
+      expect(call.success).toBe(false);
+      expect(call.error).toBe('Não autenticado');
     });
   });
 
@@ -59,7 +61,8 @@ describe('ApiResponse Utils', () => {
 
       expect(res.status).toHaveBeenCalledWith(404);
       const call = res.json.mock.calls[0][0];
-      expect(call.status).toBe('error');
+      expect(call.success).toBe(false);
+      expect(call.error).toBe('Recurso não encontrado');
     });
   });
 
@@ -69,7 +72,8 @@ describe('ApiResponse Utils', () => {
 
       expect(res.status).toHaveBeenCalledWith(500);
       const call = res.json.mock.calls[0][0];
-      expect(call.status).toBe('error');
+      expect(call.success).toBe(false);
+      expect(call.error).toBe('Erro interno');
     });
   });
 });

@@ -56,7 +56,12 @@ export const validators = {
   },
 
   // Validar string não-vazia
-  validateString: (value, fieldName = 'Campo', minLength = 1, maxLength = null) => {
+  validateString: (value, options = {}) => {
+    const { min, max } = options;
+    const fieldName = options.fieldName || 'Campo';
+    const minLength = min || 1;
+    const maxLength = max;
+
     if (!value || typeof value !== 'string') {
       return { valid: false, error: `${fieldName} é obrigatório` };
     }
@@ -85,22 +90,90 @@ export const validators = {
     return { valid: true, value };
   },
 
-  // Validar que é um objeto com campos
-  validateObject: (obj, requiredFields = []) => {
-    if (!obj || typeof obj !== 'object' || Array.isArray(obj)) {
-      return { valid: false, error: 'Dados inválidos - esperado um objeto' };
+  // Validar inteiro
+  validateInt: (value, options = {}) => {
+    const { min, max } = options;
+    const num = parseInt(value);
+
+    if (isNaN(num)) {
+      return { valid: false, error: 'Valor deve ser um número inteiro' };
     }
 
-    const missingFields = requiredFields.filter(field => !obj[field]);
-    if (missingFields.length > 0) {
-      return {
-        valid: false,
-        error: `Campos obrigatórios faltando: ${missingFields.join(', ')}`
-      };
+    // Verifica se é realmente um inteiro (não float)
+    if (parseFloat(value) !== num) {
+      return { valid: false, error: 'Valor deve ser um número inteiro' };
     }
 
-    return { valid: true };
-  }
+    if (min !== undefined && num < min) {
+      return { valid: false, error: `Valor deve ser no mínimo ${min}` };
+    }
+
+    if (max !== undefined && num > max) {
+      return { valid: false, error: `Valor deve ser no máximo ${max}` };
+    }
+
+    return { valid: true, value: num };
+  },
+
+  // Validar CPF
+  validateCPF: (cpf) => {
+    if (!cpf) return { valid: false, error: 'CPF é obrigatório' };
+
+    // Remove caracteres não numéricos
+    const cleaned = cpf.replace(/\D/g, '');
+
+    if (cleaned.length !== 11) {
+      return { valid: false, error: 'CPF deve ter 11 dígitos' };
+    }
+
+    // Verifica se todos os dígitos são iguais
+    if (/^(\d)\1+$/.test(cleaned)) {
+      return { valid: false, error: 'CPF inválido' };
+    }
+
+    // Calcula dígitos verificadores
+    let sum = 0;
+    for (let i = 0; i < 9; i++) {
+      sum += parseInt(cleaned[i]) * (10 - i);
+    }
+    let remainder = (sum * 10) % 11;
+    if (remainder === 10) remainder = 0;
+    if (remainder !== parseInt(cleaned[9])) {
+      return { valid: false, error: 'CPF inválido' };
+    }
+
+    sum = 0;
+    for (let i = 0; i < 10; i++) {
+      sum += parseInt(cleaned[i]) * (11 - i);
+    }
+    remainder = (sum * 10) % 11;
+    if (remainder === 10) remainder = 0;
+    if (remainder !== parseInt(cleaned[10])) {
+      return { valid: false, error: 'CPF inválido' };
+    }
+
+    return { valid: true, value: cleaned };
+  },
+
+  // Validar float
+  validateFloat: (value, options = {}) => {
+    const { min, max } = options;
+    const num = parseFloat(value);
+
+    if (isNaN(num)) {
+      return { valid: false, error: 'Valor deve ser um número' };
+    }
+
+    if (min !== undefined && num < min) {
+      return { valid: false, error: `Valor deve ser no mínimo ${min}` };
+    }
+
+    if (max !== undefined && num > max) {
+      return { valid: false, error: `Valor deve ser no máximo ${max}` };
+    }
+
+    return { valid: true, value: num };
+  },
 };
 
 // Middleware para validar query parameters
