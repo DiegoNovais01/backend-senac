@@ -160,8 +160,9 @@ process.on("SIGTERM", async () => {
 });
 
 // ═══════════════════════════════════════════════════════════════════════════
-// JOBS AGENDADOS
+// JOBS AGENDADOS (desativados em teste)
 // ═══════════════════════════════════════════════════════════════════════════
+<<<<<<< Updated upstream
 (async () => {
   // Apenas executar se DATABASE_URL está configurada
   if (!process.env.DATABASE_URL) {
@@ -187,3 +188,26 @@ process.on("SIGTERM", async () => {
     console.error("❌ Erro ao iniciar cleanupRefreshTokens:", { error: err.message });
   }
 })();
+=======
+if (process.env.NODE_ENV !== 'test') {
+  (async () => {
+    try {
+      await cleanupRefreshTokens();
+      logger.info("✅ Limpeza de refresh tokens executada na inicialização");
+
+      // Executa a cada 6 horas
+      setInterval(async () => {
+        try {
+          await cleanupRefreshTokens();
+        } catch (err) {
+          logger.error("❌ Erro ao limpar refresh tokens:", { error: err.message });
+        }
+      }, 6 * 60 * 60 * 1000);
+
+      logger.info("⏰ Job de limpeza de tokens agendado para executar a cada 6 horas");
+    } catch (err) {
+      logger.error("❌ Erro ao iniciar cleanupRefreshTokens:", { error: err.message });
+    }
+  })();
+}
+>>>>>>> Stashed changes

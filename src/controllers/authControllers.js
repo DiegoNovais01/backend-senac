@@ -30,7 +30,7 @@ export const register = async (req, res) => {
     }
 
     // Verifica se email já existe
-    const existente = await prisma.usuarios.findUnique({ where: { email: emailValidation.data } });
+    const existente = await prisma.usuarios.findUnique({ where: { email: emailValidation.value } });
     if (existente) {
       return ApiResponse.conflict(res, "Email já cadastrado");
     }
