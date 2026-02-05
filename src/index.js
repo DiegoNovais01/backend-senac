@@ -23,6 +23,7 @@ import { securityHeaders, hideServer, requestId, enforceJsonContentType, sanitiz
 
 // Importar jobs e utilitários
 import cleanupRefreshTokens from './jobs/cleanupRefreshTokens.js';
+import { logger } from "./utils/logger.js";
 
 dotenv.config();
 const app = express();
@@ -162,33 +163,6 @@ process.on("SIGTERM", async () => {
 // ═══════════════════════════════════════════════════════════════════════════
 // JOBS AGENDADOS (desativados em teste)
 // ═══════════════════════════════════════════════════════════════════════════
-<<<<<<< Updated upstream
-(async () => {
-  // Apenas executar se DATABASE_URL está configurada
-  if (!process.env.DATABASE_URL) {
-    console.warn("⚠️  DATABASE_URL não configurada - jobs de cleanup desativados");
-    return;
-  }
-
-  try {
-    await cleanupRefreshTokens();
-    console.log("✅ Limpeza de refresh tokens executada na inicialização");
-
-    // Executa a cada 6 horas
-    setInterval(async () => {
-      try {
-        await cleanupRefreshTokens();
-      } catch (err) {
-        console.error("❌ Erro ao limpar refresh tokens:", { error: err.message });
-      }
-    }, 6 * 60 * 60 * 1000);
-
-    console.log("⏰ Job de limpeza de tokens agendado para executar a cada 6 horas");
-  } catch (err) {
-    console.error("❌ Erro ao iniciar cleanupRefreshTokens:", { error: err.message });
-  }
-})();
-=======
 if (process.env.NODE_ENV !== 'test') {
   (async () => {
     try {
@@ -210,4 +184,3 @@ if (process.env.NODE_ENV !== 'test') {
     }
   })();
 }
->>>>>>> Stashed changes
