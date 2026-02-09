@@ -161,7 +161,7 @@ process.on("SIGTERM", async () => {
 });
 
 // ═══════════════════════════════════════════════════════════════════════════
-// JOBS AGENDADOS (desativados em teste)
+// JOBS AGENDADOS (desativados em testes)
 // ═══════════════════════════════════════════════════════════════════════════
 if (process.env.NODE_ENV !== 'test') {
   (async () => {
@@ -170,7 +170,7 @@ if (process.env.NODE_ENV !== 'test') {
       logger.info("✅ Limpeza de refresh tokens executada na inicialização");
 
       // Executa a cada 6 horas
-      setInterval(async () => {
+      const timer = setInterval(async () => {
         try {
           await cleanupRefreshTokens();
         } catch (err) {
@@ -178,9 +178,19 @@ if (process.env.NODE_ENV !== 'test') {
         }
       }, 6 * 60 * 60 * 1000);
 
+      // Evitar que o timer impeça o processo de encerrar
+      if (timer.unref) timer.unref();
+
       logger.info("⏰ Job de limpeza de tokens agendado para executar a cada 6 horas");
     } catch (err) {
       logger.error("❌ Erro ao iniciar cleanupRefreshTokens:", { error: err.message });
     }
   })();
 }
+
+// ═══════════════════════════════════════════════════════════════════════════
+// HANDLER 404 PADRONIZADO
+// ═══════════════════════════════════════════════════════════════════════════
+app.use((req, res) => {
+  return res.status(404).json({ status: 'error', message: 'Rota não encontrada' });
+});

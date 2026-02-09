@@ -4,7 +4,8 @@ export const checkRole = (...papeisPermitidos) => {
   const allowed = Array.isArray(papeisPermitidos[0]) ? papeisPermitidos[0] : papeisPermitidos;
 
   return (req, res, next) => {
-    const papel = req.user?.papel;
+    // Aceita tanto 'papel' (DB) quanto 'role' (JWT payload)
+    const papel = req.user?.papel || req.user?.role;
     if (!papel) {
       return res.status(401).json({ error: 'Não autenticado ou papel não definido' });
     }

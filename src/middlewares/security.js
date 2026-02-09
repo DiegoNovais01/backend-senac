@@ -58,9 +58,8 @@ export const enforceJsonContentType = (req, res, next) => {
     const contentType = req.get('Content-Type');
 
     if (!contentType || !contentType.includes('application/json')) {
-      return res.status(415).json({
-        success: false,
-        error: 'Unsupported Media Type',
+      return res.status(400).json({
+        status: 'error',
         message: 'Content-Type deve ser application/json',
         receivedContentType: contentType
       });
