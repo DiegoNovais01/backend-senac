@@ -52,15 +52,17 @@ export const requestId = (req, res, next) => {
 
 /**
  * Middleware para validar que o content-type é JSON para POST/PUT/PATCH
+ * Nota: Mais flexível para Swagger e testes
  */
 export const enforceJsonContentType = (req, res, next) => {
   if (['POST', 'PUT', 'PATCH'].includes(req.method)) {
     const contentType = req.get('Content-Type');
 
-    if (!contentType || !contentType.includes('application/json')) {
+    // Aceita JSON, form-data, ou sem content-type (Express vai assumir json)
+    if (contentType && !contentType.includes('application/json') && !contentType.includes('multipart/form-data') && !contentType.includes('application/x-www-form-urlencoded')) {
       return res.status(400).json({
         status: 'error',
-        message: 'Content-Type deve ser application/json',
+        message: 'Content-Type deve ser application/json ou multipart/form-data',
         receivedContentType: contentType
       });
     }
