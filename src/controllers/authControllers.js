@@ -52,12 +52,12 @@ export const register = async (req, res) => {
       }
     }
 
-    const hash = await bcrypt.hash(senhaValidation.data, 10);
+    const hash = await bcrypt.hash(senhaValidation.value, 10);
 
     const user = await prisma.usuarios.create({
       data: {
-        nome: nomeValidation.data,
-        email: emailValidation.data,
+        nome: nomeValidation.value,
+        email: emailValidation.value,
         senha: hash,
         papel
       },
@@ -77,7 +77,7 @@ export const register = async (req, res) => {
     const expiresAt = new Date(Date.now() + REFRESH_TOKEN_TTL_DAYS * 24 * 60 * 60 * 1000);
     await prisma.refresh_tokens.create({ data: { token: refreshHash, id_usuario: user.id_usuario, expires_at: expiresAt } });
 
-    logger.info("Usuário registrado com sucesso", { id_usuario: user.id_usuario, email: emailValidation.data });
+    logger.info("Usuário registrado com sucesso", { id_usuario: user.id_usuario, email: emailValidation.value });
     return ApiResponse.created(res, { user: userSemSenha, token: accessToken, refreshToken }, "Usuário registrado com sucesso");
   } catch (error) {
     logger.error("Erro ao registrar usuário", { error: error.message, body: req.body });
@@ -94,7 +94,7 @@ export const login = async (req, res) => {
       return ApiResponse.badRequest(res, emailValidation.error);
     }
 
-    const user = await prisma.usuarios.findUnique({ where: { email: emailValidation.data } });
+    const user = await prisma.usuarios.findUnique({ where: { email: emailValidation.value } });
     if (!user) {
       return ApiResponse.unauthorized(res, "Email ou senha incorretos");
     }
@@ -116,7 +116,7 @@ export const login = async (req, res) => {
     const expiresAt = new Date(Date.now() + REFRESH_TOKEN_TTL_DAYS * 24 * 60 * 60 * 1000);
     await prisma.refresh_tokens.create({ data: { token: refreshHash, id_usuario: user.id_usuario, expires_at: expiresAt } });
 
-    logger.info("Login realizado com sucesso", { id_usuario: user.id_usuario, email: emailValidation.data });
+    logger.info("Login realizado com sucesso", { id_usuario: user.id_usuario, email: emailValidation.value });
     return ApiResponse.success(res, { token: accessToken, refreshToken }, "Login realizado com sucesso");
   } catch (error) {
     logger.error("Erro ao fazer login", { error: error.message });

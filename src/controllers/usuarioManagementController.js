@@ -103,7 +103,7 @@ export const solicitarRecuperacaoSenha = async (req, res) => {
       return ApiResponse.badRequest(res, emailValidation.error);
     }
 
-    const usuario = await prisma.usuarios.findUnique({ where: { email: emailValidation.data } });
+    const usuario = await prisma.usuarios.findUnique({ where: { email: emailValidation.value } });
 
     if (!usuario) {
       // Retorna sucesso mesmo se email não existe (segurança)
@@ -118,7 +118,7 @@ export const solicitarRecuperacaoSenha = async (req, res) => {
     // Em desenvolvimento, retorna o token (em produção seria via email)
     const linkReset = `http://localhost:3000/auth/resetar-senha?token=${resetToken}&email=${usuario.email}`;
 
-    logger.info("Link de recuperação gerado", { email: emailValidation.data });
+    logger.info("Link de recuperação gerado", { email: emailValidation.value });
 
     return ApiResponse.success(res, {
       status: 'enviado',
@@ -151,14 +151,14 @@ export const resetarSenha = async (req, res) => {
       return ApiResponse.badRequest(res, "Token é obrigatório");
     }
 
-    const usuario = await prisma.usuarios.findUnique({ where: { email: emailValidation.data } });
+    const usuario = await prisma.usuarios.findUnique({ where: { email: emailValidation.value } });
 
     if (!usuario) {
       return ApiResponse.notFound(res, "Usuário não encontrado");
     }
 
     // Hash a nova senha
-    const novoHash = await bcrypt.hash(senhaValidation.data, 10);
+    const novoHash = await bcrypt.hash(senhaValidation.value, 10);
 
     // Atualiza a senha
     await prisma.usuarios.update({

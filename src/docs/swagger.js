@@ -136,7 +136,13 @@ swaggerSpec.paths = {
       security: [],
       requestBody: {
         required: true,
-        content: { 'application/json': { schema: { $ref: '#/components/schemas/Usuario' } } }
+        content: {
+          'application/json': {
+            schema: {
+              $ref: '#/components/schemas/Usuario'
+            }
+          }
+        }
       },
       responses: {
         '201': { description: 'Usuário criado com sucesso' },
