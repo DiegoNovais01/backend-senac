@@ -30,7 +30,7 @@ model avaliacoes {
   comentario     String?   @db.Text
   data_avaliacao DateTime? @default(now()) @db.Timestamp(0)
   cursos         cursos?   @relation(fields: [id_curso], references: [id_curso], onDelete: NoAction, onUpdate: NoAction, map: "avaliacoes_ibfk_1")
-  alunos         alunos?   @relation(fields: [id_aluno], references: [id_aluno], onDelete: NoAction, onUpdate: NoAction, map: "avaliacoes_ibfk_2")
+  alunos         alunos?   @relation(fields: [id_aluno], references: [id_aluno], onDelete: Cascade, onUpdate: NoAction, map: "avaliacoes_ibfk_2")
 
   @@index([id_aluno], map: "id_aluno")
   @@index([id_curso], map: "id_curso")
@@ -79,7 +79,7 @@ model matriculas {
   data_matricula DateTime?          @db.Date
   status         matriculas_status? @default(ativa)
   nota_final     Decimal?           @db.Decimal(4, 2)
-  alunos         alunos?            @relation(fields: [id_aluno], references: [id_aluno], onDelete: NoAction, onUpdate: NoAction, map: "matriculas_ibfk_1")
+  alunos         alunos?            @relation(fields: [id_aluno], references: [id_aluno], onDelete: Cascade, onUpdate: NoAction, map: "matriculas_ibfk_1")
   cursos         cursos?            @relation(fields: [id_curso], references: [id_curso], onDelete: NoAction, onUpdate: NoAction, map: "matriculas_ibfk_2")
 
   @@index([id_aluno], map: "id_aluno")

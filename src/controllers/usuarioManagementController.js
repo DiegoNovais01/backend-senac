@@ -53,7 +53,7 @@ export const listarUsuariosLogados = async (req, res) => {
       total_usuarios: usuariosFormatados.length,
       usuarios_com_sessao: usuariosFormatados.filter(u => u.sessoes_ativas > 0).length,
       usuarios: usuariosFormatados
-    }, "Usuários logados recuperados com sucesso");
+    }, 200, "Usuários logados recuperados com sucesso");
   } catch (error) {
     logger.error("Erro ao listar usuários logados", { error: error.message });
     return ApiResponse.serverError(res, "Erro ao listar usuários logados");
@@ -83,7 +83,7 @@ export const listarTodosUsuariosComCredenciais = async (req, res) => {
       aviso: 'Este endpoint retorna dados sensíveis. Não usar em produção!',
       total: usuarios.length,
       usuarios: usuarios
-    }, "Usuários listados (endpoint sensível)");
+    }, 200, "Usuários listados (endpoint sensível)");
   } catch (error) {
     logger.error("Erro ao listar usuários com credenciais", { error: error.message });
     return ApiResponse.serverError(res, "Erro ao listar usuários");
@@ -107,7 +107,7 @@ export const solicitarRecuperacaoSenha = async (req, res) => {
 
     if (!usuario) {
       // Retorna sucesso mesmo se email não existe (segurança)
-      return ApiResponse.success(res, { status: 'enviado' }, "Se o email existe, um link de reset foi enviado");
+      return ApiResponse.success(res, { status: 'enviado' }, 200, "Se o email existe, um link de reset foi enviado");
     }
 
     // Gera token de reset válido por 1 hora
@@ -123,7 +123,7 @@ export const solicitarRecuperacaoSenha = async (req, res) => {
     return ApiResponse.success(res, {
       status: 'enviado',
       dev_link: process.env.NODE_ENV === 'development' ? linkReset : undefined
-    }, "Email de recuperação enviado (em produção)");
+    }, 200, "Email de recuperação enviado (em produção)");
   } catch (error) {
     logger.error("Erro ao solicitar recuperação de senha", { error: error.message });
     return ApiResponse.serverError(res, "Erro ao solicitar recuperação de senha");
@@ -167,7 +167,7 @@ export const resetarSenha = async (req, res) => {
     });
 
     logger.info("Senha resetada com sucesso", { id_usuario: usuario.id_usuario });
-    return ApiResponse.success(res, { status: 'sucesso' }, "Senha atualizada com sucesso");
+    return ApiResponse.success(res, { status: 'sucesso' }, 200, "Senha atualizada com sucesso");
   } catch (error) {
     logger.error("Erro ao resetar senha", { error: error.message });
     return ApiResponse.serverError(res, "Erro ao resetar senha");
@@ -221,7 +221,7 @@ export const mudarSenha = async (req, res) => {
     });
 
     logger.info("Senha alterada com sucesso", { id_usuario: userId });
-    return ApiResponse.success(res, { status: 'sucesso' }, "Senha alterada com sucesso");
+    return ApiResponse.success(res, { status: 'sucesso' }, 200, "Senha alterada com sucesso");
   } catch (error) {
     logger.error("Erro ao mudar senha", { error: error.message });
     return ApiResponse.serverError(res, "Erro ao mudar senha");
@@ -256,7 +256,7 @@ export const obterMeuPerfil = async (req, res) => {
     }
 
     logger.info("Perfil carregado", { id_usuario: userId });
-    return ApiResponse.success(res, { perfil: usuario }, "Dados do perfil carregados com sucesso");
+    return ApiResponse.success(res, { perfil: usuario }, 200, "Dados do perfil carregados com sucesso");
   } catch (error) {
     logger.error("Erro ao obter perfil", { error: error.message });
     return ApiResponse.serverError(res, "Erro ao obter perfil");
@@ -299,7 +299,7 @@ export const minhasSessoes = async (req, res) => {
     return ApiResponse.success(res, {
       total_sessoes: sessoesFormatadas.length,
       sessoes: sessoesFormatadas
-    }, "Sessões recuperadas com sucesso");
+    }, 200, "Sessões recuperadas com sucesso");
   } catch (error) {
     logger.error("Erro ao listar sessões", { error: error.message });
     return ApiResponse.serverError(res, "Erro ao listar sessões");
@@ -328,7 +328,7 @@ export const logoutDaSessao = async (req, res) => {
     }
 
     const sessao = await prisma.refresh_tokens.findUnique({
-      where: { id: sessaoIdValidation.data }
+      where: { id: sessaoIdValidation.value }
     });
 
     if (!sessao || sessao.id_usuario !== userId) {
@@ -336,12 +336,12 @@ export const logoutDaSessao = async (req, res) => {
     }
 
     await prisma.refresh_tokens.update({
-      where: { id: sessaoIdValidation.data },
+      where: { id: sessaoIdValidation.value },
       data: { revoked: true }
     });
 
-    logger.info("Sessão encerrada com sucesso", { id_usuario: userId, sessao_id: sessaoIdValidation.data });
-    return ApiResponse.success(res, { status: 'sucesso' }, "Sessão encerrada com sucesso");
+    logger.info("Sessão encerrada com sucesso", { id_usuario: userId, sessao_id: sessaoIdValidation.value });
+    return ApiResponse.success(res, { status: 'sucesso' }, 200, "Sessão encerrada com sucesso");
   } catch (error) {
     logger.error("Erro ao encerrar sessão", { error: error.message });
     return ApiResponse.serverError(res, "Erro ao encerrar sessão");
@@ -371,7 +371,7 @@ export const logoutGlobal = async (req, res) => {
     return ApiResponse.success(res, {
       sessoes_encerradas: resultado.count,
       status: 'sucesso'
-    }, "Logout de todas as sessões realizado com sucesso");
+    }, 200, "Logout de todas as sessões realizado com sucesso");
   } catch (error) {
     logger.error("Erro ao fazer logout global", { error: error.message });
     return ApiResponse.serverError(res, "Erro ao fazer logout global");
