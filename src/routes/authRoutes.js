@@ -15,12 +15,12 @@ import { authLimiter } from "../middlewares/rateLimit.js";
 import { authMiddleware } from "../middlewares/authMiddleware.js";
 import { checkRole } from "../middlewares/checkRole.js";
 import { validateBody } from "../middlewares/validateBody.js";
-import { 
-  loginSchema, 
+import {
+  loginSchema,
   registerSchema,
-  recuperarSenhaSchema, 
-  resetarSenhaSchema, 
-  mudarSenhaSchema 
+  recuperarSenhaSchema,
+  resetarSenhaSchema,
+  mudarSenhaSchema
 } from "../schemas/authSchema.js";
 
 const router = express.Router();
@@ -33,7 +33,7 @@ router.post("/logout", authMiddleware, logout);
 
 // 🔑 Recuperação de Senha (protegida contra brute force)
 router.post("/recuperar-senha", validateBody(recuperarSenhaSchema), solicitarRecuperacaoSenha);
-router.post("/resetar-senha", validateBody(resetarSenhaSchema), resetarSenha);
+// rota /resetar-senha removida por opção do projeto (recuperação via link enviado)
 router.post("/mudar-senha", authMiddleware, validateBody(mudarSenhaSchema), mudarSenha);
 
 // 👤 Perfil do Usuário Logado

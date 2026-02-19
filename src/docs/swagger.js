@@ -205,18 +205,7 @@ swaggerSpec.paths = {
       responses: { '200': { description: 'Email enviado' }, '400': { description: 'Email não fornecido' } }
     }
   },
-  '/auth/resetar-senha': {
-    post: {
-      tags: ['🔐 Autenticação'],
-      summary: 'Resetar senha com token',
-      security: [],
-      requestBody: {
-        required: true,
-        content: { 'application/json': { schema: { type: 'object', properties: { email: { type: 'string', format: 'email' }, token: { type: 'string' }, nova_senha: { type: 'string', minLength: 6 } }, required: ['email', 'token', 'nova_senha'] } } }
-      },
-      responses: { '200': { description: 'Senha atualizada' }, '400': { description: 'Dados inválidos' } }
-    }
-  },
+
   '/auth/mudar-senha': {
     post: {
       tags: ['🔐 Autenticação'],
