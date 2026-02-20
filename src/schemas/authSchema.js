@@ -26,7 +26,3 @@ export const recuperarSenhaSchema = z.object({
   email: z.string().email("Email inválido"),
 });
 
-export const resetarSenhaSchema = z.object({
-  token: z.string().min(1, "Token obrigatório"),
-  nova_senha: z.string().min(8, "Senha deve ter no mínimo 8 caracteres").regex(/^(?=.*[A-Z])(?=.*[0-9])/, "Senha deve conter letras maiúsculas e números"),
-});

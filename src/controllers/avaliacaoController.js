@@ -16,14 +16,14 @@ export const listarAvaliacoes = async (req, res) => {
       if (!cursoValidation.valid) {
         return ApiResponse.badRequest(res, "id_curso inválido");
       }
-      where.id_curso = cursoValidation.data;
+      where.id_curso = cursoValidation.value;
     }
     if (id_aluno) {
       const alunoValidation = validateId(id_aluno);
       if (!alunoValidation.valid) {
         return ApiResponse.badRequest(res, "id_aluno inválido");
       }
-      where.id_aluno = alunoValidation.data;
+      where.id_aluno = alunoValidation.value;
     }
 
     const [avaliacoes, total] = await Promise.all([
@@ -53,7 +53,7 @@ export const buscarAvaliacaoPorId = async (req, res) => {
     }
 
     const avaliacao = await prisma.avaliacoes.findUnique({
-      where: { id_avaliacao: idValidation.data },
+      where: { id_avaliacao: idValidation.value },
       include: { cursos: true, alunos: true }
     });
     if (!avaliacao) {
@@ -87,7 +87,7 @@ export const criarAvaliacao = async (req, res) => {
 
     // Verificar se curso existe
     const cursoExiste = await prisma.cursos.findUnique({
-      where: { id_curso: cursoValidation.data }
+      where: { id_curso: cursoValidation.value }
     });
 
     if (!cursoExiste) {
@@ -96,7 +96,7 @@ export const criarAvaliacao = async (req, res) => {
 
     // Verificar se aluno existe
     const alunoExiste = await prisma.alunos.findUnique({
-      where: { id_aluno: alunoValidation.data }
+      where: { id_aluno: alunoValidation.value }
     });
 
     if (!alunoExiste) {
@@ -106,8 +106,8 @@ export const criarAvaliacao = async (req, res) => {
     // Verificar se aluno está matriculado neste curso
     const matriculaExiste = await prisma.matriculas.findFirst({
       where: {
-        id_aluno: alunoValidation.data,
-        id_curso: cursoValidation.data
+        id_aluno: alunoValidation.value,
+        id_curso: cursoValidation.value
       }
     });
 
@@ -117,14 +117,14 @@ export const criarAvaliacao = async (req, res) => {
 
     const nova = await prisma.avaliacoes.create({
       data: {
-        id_curso: cursoValidation.data,
-        id_aluno: alunoValidation.data,
+        id_curso: cursoValidation.value,
+        id_aluno: alunoValidation.value,
         nota: notaValidation.data,
         comentario
       }
     });
 
-    logger.info("Avaliação criada com sucesso", { id_avaliacao: nova.id_avaliacao, id_aluno: alunoValidation.data });
+    logger.info("Avaliação criada com sucesso", { id_avaliacao: nova.id_avaliacao, id_aluno: alunoValidation.value });
     return ApiResponse.created(res, nova, "Avaliação criada com sucesso");
   } catch (err) {
     logger.error("Erro ao criar avaliação", { error: err.message, body: req.body });
@@ -143,7 +143,7 @@ export const atualizarAvaliacao = async (req, res) => {
     const { nota, comentario } = req.body;
 
     const avaliacaoExiste = await prisma.avaliacoes.findUnique({
-      where: { id_avaliacao: idValidation.data }
+      where: { id_avaliacao: idValidation.value }
     });
 
     if (!avaliacaoExiste) {
@@ -151,14 +151,14 @@ export const atualizarAvaliacao = async (req, res) => {
     }
 
     const atualizada = await prisma.avaliacoes.update({
-      where: { id_avaliacao: idValidation.data },
+      where: { id_avaliacao: idValidation.value },
       data: {
         nota: nota ? parseInt(nota) : undefined,
         comentario
       }
     });
 
-    logger.info("Avaliação atualizada com sucesso", { id_avaliacao: idValidation.data });
+    logger.info("Avaliação atualizada com sucesso", { id_avaliacao: idValidation.value });
     return ApiResponse.success(res, atualizada, "Avaliação atualizada com sucesso");
   } catch (err) {
     logger.error("Erro ao atualizar avaliação", { id: req.params.id, error: err.message });
@@ -175,15 +175,15 @@ export const deletarAvaliacao = async (req, res) => {
     }
 
     const avaliacaoExiste = await prisma.avaliacoes.findUnique({
-      where: { id_avaliacao: idValidation.data }
+      where: { id_avaliacao: idValidation.value }
     });
 
     if (!avaliacaoExiste) {
       return ApiResponse.notFound(res, "Avaliação não encontrada");
     }
 
-    await prisma.avaliacoes.delete({ where: { id_avaliacao: idValidation.data } });
-    logger.info("Avaliação deletada com sucesso", { id_avaliacao: idValidation.data });
+    await prisma.avaliacoes.delete({ where: { id_avaliacao: idValidation.value } });
+    logger.info("Avaliação deletada com sucesso", { id_avaliacao: idValidation.value });
     return ApiResponse.success(res, null, "Avaliação removida com sucesso");
   } catch (err) {
     logger.error("Erro ao deletar avaliação", { id: req.params.id, error: err.message });

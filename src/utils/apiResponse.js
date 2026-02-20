@@ -39,7 +39,7 @@ const ERROR_MESSAGES = {
 
 export const ApiResponse = {
   // Sucesso
-  success: (res, data, statusCode = 200, message = null) => {
+  success: (res, data, message = null, statusCode = 200) => {
     logger.info(`API Response: ${statusCode}`, { message, dataType: typeof data });
     return res.status(statusCode).json({
       success: true,
@@ -49,7 +49,7 @@ export const ApiResponse = {
   },
 
   created: (res, data, message = 'Recurso criado com sucesso') => {
-    return ApiResponse.success(res, data, 201, message);
+    return ApiResponse.success(res, data, message, 201);
   },
 
   // Erros de validação
@@ -84,6 +84,15 @@ export const ApiResponse = {
   forbidden: (res, message = ERROR_MESSAGES.FORBIDDEN) => {
     logger.warn(`Forbidden: ${message}`);
     return res.status(403).json({
+      success: false,
+      error: message
+    });
+  },
+
+  // Conflito (recurso já existe, operação inválida, etc)
+  conflict: (res, message = 'Conflito - recurso já existe ou operação inválida') => {
+    logger.warn(`Conflict: ${message}`);
+    return res.status(409).json({
       success: false,
       error: message
     });

@@ -34,7 +34,7 @@ export const buscarCategoriaPorId = async (req, res) => {
     }
 
     const categoria = await prisma.categorias.findUnique({
-      where: { id_categoria: idValidation.data },
+      where: { id_categoria: idValidation.value },
       include: { cursos: true }
     });
     if (!categoria) {
@@ -59,7 +59,7 @@ export const criarCategoria = async (req, res) => {
 
     // Verificar se categoria já existe
     const existente = await prisma.categorias.findFirst({
-      where: { nome: nomeValidation.data.toLowerCase() }
+      where: { nome: nomeValidation.value.toLowerCase() }
     });
 
     if (existente) {
@@ -67,7 +67,7 @@ export const criarCategoria = async (req, res) => {
     }
 
     const nova = await prisma.categorias.create({
-      data: { nome: nomeValidation.data, descricao }
+      data: { nome: nomeValidation.value, descricao }
     });
 
     logger.info("Categoria criada com sucesso", { id_categoria: nova.id_categoria, nome: nova.nome });
@@ -89,7 +89,7 @@ export const atualizarCategoria = async (req, res) => {
     const { nome, descricao } = req.body;
 
     const categoriaExiste = await prisma.categorias.findUnique({
-      where: { id_categoria: idValidation.data }
+      where: { id_categoria: idValidation.value }
     });
 
     if (!categoriaExiste) {
@@ -97,11 +97,11 @@ export const atualizarCategoria = async (req, res) => {
     }
 
     const atualizada = await prisma.categorias.update({
-      where: { id_categoria: idValidation.data },
+      where: { id_categoria: idValidation.value },
       data: { nome, descricao }
     });
 
-    logger.info("Categoria atualizada com sucesso", { id_categoria: idValidation.data });
+    logger.info("Categoria atualizada com sucesso", { id_categoria: idValidation.value });
     return ApiResponse.success(res, atualizada, "Categoria atualizada com sucesso");
   } catch (err) {
     logger.error("Erro ao atualizar categoria", { id: req.params.id, error: err.message });
@@ -118,7 +118,7 @@ export const deletarCategoria = async (req, res) => {
     }
 
     const categoriaExiste = await prisma.categorias.findUnique({
-      where: { id_categoria: idValidation.data },
+      where: { id_categoria: idValidation.value },
       include: { cursos: true }
     });
 
@@ -130,8 +130,8 @@ export const deletarCategoria = async (req, res) => {
       return ApiResponse.conflict(res, `Não é possível deletar categoria com ${categoriaExiste.cursos.length} curso(s) associado(s)`);
     }
 
-    await prisma.categorias.delete({ where: { id_categoria: idValidation.data } });
-    logger.info("Categoria deletada com sucesso", { id_categoria: idValidation.data });
+    await prisma.categorias.delete({ where: { id_categoria: idValidation.value } });
+    logger.info("Categoria deletada com sucesso", { id_categoria: idValidation.value });
     return ApiResponse.success(res, null, "Categoria removida com sucesso");
   } catch (err) {
     logger.error("Erro ao deletar categoria", { id: req.params.id, error: err.message });

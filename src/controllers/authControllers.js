@@ -117,7 +117,7 @@ export const login = async (req, res) => {
     await prisma.refresh_tokens.create({ data: { token: refreshHash, id_usuario: user.id_usuario, expires_at: expiresAt } });
 
     logger.info("Login realizado com sucesso", { id_usuario: user.id_usuario, email: emailValidation.value });
-    return ApiResponse.success(res, { token: accessToken, refreshToken }, 200, "Login realizado com sucesso");
+    return ApiResponse.success(res, { token: accessToken, refreshToken }, "Login realizado com sucesso", 200);
   } catch (error) {
     logger.error("Erro ao fazer login", { error: error.message });
     return ApiResponse.serverError(res, "Erro ao fazer login");
@@ -158,7 +158,7 @@ export const refresh = async (req, res) => {
     await prisma.refresh_tokens.update({ where: { id: stored.id }, data: { token: newHash, expires_at: newExpiresAt } });
 
     logger.info("Token renovado com sucesso", { id_usuario: user.id_usuario });
-    return ApiResponse.success(res, { token: accessToken, refreshToken: newRefreshToken }, 200, "Token renovado com sucesso");
+    return ApiResponse.success(res, { token: accessToken, refreshToken: newRefreshToken }, "Token renovado com sucesso", 200);
   } catch (err) {
     logger.error("Erro ao renovar token", { error: err.message });
     return ApiResponse.serverError(res, "Erro ao renovar token");

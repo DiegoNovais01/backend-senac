@@ -4,7 +4,6 @@ import {
   listarUsuariosLogados,
   listarTodosUsuariosComCredenciais,
   solicitarRecuperacaoSenha,
-  resetarSenha,
   mudarSenha,
   obterMeuPerfil,
   minhasSessoes,
@@ -19,7 +18,6 @@ import {
   loginSchema,
   registerSchema,
   recuperarSenhaSchema,
-  resetarSenhaSchema,
   mudarSenhaSchema
 } from "../schemas/authSchema.js";
 

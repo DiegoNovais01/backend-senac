@@ -55,7 +55,7 @@ export const buscarCursoPorId = async (req, res) => {
     }
 
     const curso = await prisma.cursos.findUnique({
-      where: { id_curso: idValidation.data },
+      where: { id_curso: idValidation.value },
     });
     if (!curso) {
       return ApiResponse.notFound(res, "Curso não encontrado");
@@ -146,7 +146,7 @@ export const atualizarCurso = async (req, res) => {
     data.modalidade = normalizeModalidade(data.modalidade);
 
     const atualizado = await prisma.cursos.update({
-      where: { id_curso: idValidation.data },
+      where: { id_curso: idValidation.value },
       data,
     });
 
@@ -167,15 +167,15 @@ export const deletarCurso = async (req, res) => {
     }
 
     const cursoExiste = await prisma.cursos.findUnique({
-      where: { id_curso: idValidation.data },
+      where: { id_curso: idValidation.value },
     });
 
     if (!cursoExiste) {
       return ApiResponse.notFound(res, "Curso não encontrado");
     }
 
-    await prisma.cursos.delete({ where: { id_curso: idValidation.data } });
-    logger.info("Curso deletado com sucesso", { id_curso: idValidation.data });
+    await prisma.cursos.delete({ where: { id_curso: idValidation.value } });
+    logger.info("Curso deletado com sucesso", { id_curso: idValidation.value });
     return ApiResponse.success(res, null, "Curso excluído com sucesso");
   } catch (err) {
     logger.error("Erro ao excluir curso", { id: req.params.id, error: err.message });
