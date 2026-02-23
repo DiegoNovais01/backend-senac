@@ -26,7 +26,7 @@ const router = express.Router();
 // 🔐 Autenticação básica
 router.post("/login", authLimiter, validateBody(loginSchema), login);
 router.post("/register", authLimiter, validateBody(registerSchema), register);
-router.post("/refresh", validateBody({ parse: (data) => data }), refresh);
+router.post("/refresh", refresh);
 router.post("/logout", authMiddleware, logout);
 
 // 🔑 Recuperação de Senha (protegida contra brute force)

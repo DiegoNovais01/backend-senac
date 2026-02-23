@@ -126,8 +126,8 @@ export const login = async (req, res) => {
 
 export const refresh = async (req, res) => {
   try {
-    // Aceita o refresh token via json body (refreshToken, refresh_token), header x-refresh-token, Authorization Bearer, ou query
-    const refreshToken = req.body?.refreshToken || req.body?.refresh_token || req.headers['x-refresh-token'] || (req.headers.authorization?.split(' ')[1]) || req.query?.refreshToken || req.query?.refresh_token;
+    // Aceita o refresh token via json body (refreshToken, refresh_token) ou header x-refresh-token
+    const refreshToken = req.body?.refreshToken || req.body?.refresh_token || req.headers['x-refresh-token'] || req.query?.refreshToken || req.query?.refresh_token;
 
     if (!refreshToken) {
       logger.warn("Refresh token não fornecido", { body: !!req.body, headers: !!req.headers });
@@ -167,7 +167,7 @@ export const refresh = async (req, res) => {
 
 export const logout = async (req, res) => {
   try {
-    const refreshToken = req.body?.refreshToken || req.body?.refresh_token || req.headers['x-refresh-token'] || (req.headers.authorization?.split(' ')[1]) || req.query?.refreshToken || req.query?.refresh_token;
+    const refreshToken = req.body?.refreshToken || req.body?.refresh_token || req.headers['x-refresh-token'] || req.query?.refreshToken || req.query?.refresh_token;
 
     if (!refreshToken) {
       logger.warn("Logout sem refresh token fornecido");
@@ -176,11 +176,11 @@ export const logout = async (req, res) => {
     const refreshHash = crypto.createHash('sha256').update(refreshToken).digest('hex');
     const stored = await prisma.refresh_tokens.findFirst({ where: { token: refreshHash } });
     if (!stored) {
-      return ApiResponse.success(res, null, 200, "Logout realizado (token inválido ou já removido)");
+      return ApiResponse.success(res, null, "Logout realizado (token inválido ou já removido)", 200);
     }
     await prisma.refresh_tokens.update({ where: { id: stored.id }, data: { revoked: true } });
     logger.info("Logout realizado com sucesso", { id_usuario: stored.id_usuario });
-    return ApiResponse.success(res, null, 200, "Logout realizado com sucesso");
+    return ApiResponse.success(res, null, "Logout realizado com sucesso", 200);
   } catch (err) {
     logger.error("Erro ao fazer logout", { error: err.message });
     return ApiResponse.serverError(res, "Erro ao fazer logout");
